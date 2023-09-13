@@ -1,0 +1,61 @@
+:root {
+  /* Fonts */
+  --font-primary: 'Public Sans', Arial, Helvetica, sans-serif;
+  --font-decorative: 'Press Start 2P', var(--font-primary);
+
+  /* Typography */
+  --type-xxs: 0.75rem; /* 12px */
+  --type-xs: 0.875rem; /* 14px */
+  --type-sm: 1rem; /* 16px */
+  --type-md: 1.25rem; /* 20px */
+  --type-lg: 1.5rem; /* 24px */
+
+  /* Colors */
+  --color-background: #fff;
+  --color-background-shade: #ebebeb;
+  --color-text: #363636;
+  --color-text-tint: #b4b4b4;
+  --color-primary: #6c00f4;
+  --color-primary-tint: #e2ccfd;
+  --color-highlight: #6129ff;
+  --color-accent: #7a35d2;
+  --color-input-background: #f3f3f3;
+  --color-input-placeholder: #a9a9a9;
+  --color-danger: #e20000;
+
+  /* Borders */
+  --border-radius-sm: 0.25rem;
+  --border-radius-lg: 999999px;
+
+  /* Spacing */
+  --sp-xxs: 0.375rem; /* 6px */
+  --sp-xs: 0.875rem; /* 14px */
+  --sp-sm: 1rem; /* 16px */
+  --sp-md: 1.25rem; /* 20px */
+  --sp-lg: 1.5rem; /* 24px */
+
+  /* Layout */
+  --layout-max-width: 480px;
+
+  /* Filter */
+  --color-primary-filter: brightness(0) saturate(100%) invert(11%) sepia(86%)
+    saturate(7478%) hue-rotate(271deg) brightness(88%) contrast(121%);
+}
+
+.dark {
+  /* Colors */
+  --color-background: #181818;
+  --color-background-shade: #1e1e1e;
+  --color-text: #cecece;
+  --color-text-tint: #787878;
+  --color-primary: #ffd600;
+  --color-highlight: #ffd600;
+  --color-accent: #ffb800;
+  --color-input-background: #252525;
+  --color-input-placeholder: #787878;
+  --color-danger: #ea3b3b;
+  --color-primary-filter: brightness(0) saturate(100%) invert(82%) sepia(59%)
+    saturate(1941%) hue-rotate(360deg) brightness(102%) contrast(106%);
+}
+
+/* https://angel-rs.github.io/css-color-filter-generator/ */

@@ -1,0 +1,19 @@
+.text-decor {
+  font-family: var(--font-decorative);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-xxs {
+  font-size: var(--type-xxs);
+}
+
+.text-md {
+  font-size: var(--type-md);
+}
+
+.text-lg {
+  font-size: var(--type-lg);
+}

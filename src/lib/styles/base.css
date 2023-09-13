@@ -1,0 +1,69 @@
+body {
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-primary);
+}
+
+button {
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  color: var(--color-background);
+  font-size: var(--type-md);
+  font-weight: 500;
+  padding: var(--sp-xs);
+  width: 100%;
+  transition: ease all 0.25s;
+}
+
+button:hover,
+button:focus {
+  background: var(--color-highlight);
+}
+
+button:active {
+  background: var(--color-accent);
+}
+
+input,
+textarea,
+select,
+label[for] {
+  display: block;
+  text-align: start;
+  width: 100%;
+}
+
+input:is([type='text'], [type='number']),
+textarea,
+select {
+  background: var(--color-input-background);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: var(--sp-sm);
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  height: 100%;
+}
+
+.row-px {
+  padding-inline: var(--sp-lg);
+}
+
+.m-auto {
+  margin: auto;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
