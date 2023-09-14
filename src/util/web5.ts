@@ -13,42 +13,66 @@ import {
   type ProtocolsConfigureResponse,
   type ProtocolsConfigureRequest,
 } from '@web5/api';
+import { ChatProtocol } from './protocols/chat.protocol';
+import { RoutePaths } from '../routes';
 
-export const { web5, did } = await Web5.connect();
+let web5: Web5;
+let did: string;
+
+export async function connectWeb5() {
+  const { web5: connectedWeb5, did: connectedDid } = await Web5.connect();
+  [web5, did] = [connectedWeb5, connectedDid];
+  return { web5, did };
+}
+
+export async function getWeb5Route() {
+  const { protocols } = await web5.dwn.protocols.query({
+    message: {
+      filter: {
+        protocol: ChatProtocol.protocol,
+      },
+    },
+  });
+  let route;
+  if (protocols?.length) {
+    if (!location.pathname.includes(RoutePaths.CHAT)) {
+      route = RoutePaths.CHAT;
+    }
+  } else {
+    if (!location.pathname.includes(RoutePaths.ONBOARDING)) {
+      route = RoutePaths.ONBOARDING;
+    }
+  }
+  return route;
+}
 
 export async function writeRecord(
   writeRequest: RecordsWriteRequest,
-): Promise<RecordsWriteResponse & { data: unknown }> {
+): Promise<RecordsWriteResponse> {
   const { status, record } = await web5.dwn.records.write(writeRequest);
-  const data = await record?.data.json();
   return {
     status,
     record,
-    data,
   };
 }
 
 export async function queryRecords(
   queryRequest: RecordsQueryRequest,
-): Promise<RecordsQueryResponse & { data: unknown }> {
+): Promise<RecordsQueryResponse> {
   const { status, records } = await web5.dwn.records.query(queryRequest);
-  const data = records?.map(async record => await record.data.json());
   return {
     status,
     records,
-    data,
   };
 }
 
 export async function readRecord(
   readRequest: RecordsReadRequest,
-): Promise<RecordsReadResponse & { data: unknown }> {
+): Promise<RecordsReadResponse> {
   const { status, record } = await web5.dwn.records.read(readRequest);
-  const data = record?.data.json();
   return {
     status,
     record,
-    data,
   };
 }
 
@@ -61,7 +85,7 @@ export async function deleteRecord(
   };
 }
 
-export async function configureProtoco(
+export async function configureProtocol(
   configureRequest: ProtocolsConfigureRequest,
 ): Promise<ProtocolsConfigureResponse> {
   const { status, protocol } =
