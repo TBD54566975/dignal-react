@@ -10,21 +10,20 @@ export async function load() {
     displayName: 'SK',
   };
   async function getCred() {
-    const publicKey = {
+    const publicKey: PublicKeyCredentialRequestOptions = {
       challenge: new Uint8Array([117, 61, 252, 231, 191, 241]),
       rpId: 'localhost',
       allowCredentials: [],
       userVerification: 'required',
     };
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+
     return typeof navigator !== 'undefined'
       ? await navigator.credentials.get({ publicKey })
       : null;
   }
 
   async function createCred() {
-    const publicKey = {
+    const publicKey: PublicKeyCredentialCreationOptions = {
       challenge: new Uint8Array([117, 61, 252, 231, 191, 241]),
       rp: { id: 'localhost', name: 'dignal.com' },
       user: userA,
@@ -38,8 +37,7 @@ export async function load() {
         requireResidentKey: true,
       },
     };
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+
     return typeof navigator !== 'undefined'
       ? await navigator.credentials.create({ publicKey })
       : null;
