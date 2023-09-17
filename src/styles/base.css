@@ -115,6 +115,7 @@ select {
 /* Chat.tsx */
 .chat-container {
   display: flex;
+  max-height: calc(100dvh - 58px);
 }
 
 /* Sidebar.tsx */
@@ -226,7 +227,6 @@ a.message-row:focus {
 }
 .history-window {
   overflow-y: scroll;
-  max-height: calc(100vh - 340px);
 }
 .chat-window {
   background: var(--color-background-shade);
