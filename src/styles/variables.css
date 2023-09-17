@@ -20,6 +20,7 @@
   --color-highlight: #6129ff;
   --color-accent: #7a35d2;
   --color-input-background: #f3f3f3;
+  --color-input-background-tint: #fff;
   --color-input-placeholder: #a9a9a9;
   --color-danger: #e20000;
 
@@ -40,6 +41,9 @@
   /* Filter */
   --color-primary-filter: brightness(0) saturate(100%) invert(11%) sepia(86%)
     saturate(7478%) hue-rotate(271deg) brightness(88%) contrast(121%);
+
+  /* Box Shadow */
+  --box-shadow: 0 0 16px rgba(220, 220, 220, 0.25);
 }
 
 .dark {
@@ -52,10 +56,14 @@
   --color-highlight: #ffd600;
   --color-accent: #ffb800;
   --color-input-background: #252525;
+  --color-input-background-tint: #252525;
   --color-input-placeholder: #787878;
   --color-danger: #ea3b3b;
   --color-primary-filter: brightness(0) saturate(100%) invert(82%) sepia(59%)
     saturate(1941%) hue-rotate(360deg) brightness(102%) contrast(106%);
+
+  /* Box Shadow */
+  --box-shadow: 0 0 16px rgba(220, 220, 220, 0.01);
 }
 
 /* https://angel-rs.github.io/css-color-filter-generator/ */
