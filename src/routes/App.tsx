@@ -8,13 +8,13 @@ function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function activeWeb5AndRouteUser() {
+    async function activateWeb5AndRouteUser() {
       await connectWeb5();
       const route = await getWeb5Route();
       setIsLoading(false);
       route && navigate(route);
     }
-    void activeWeb5AndRouteUser();
+    void activateWeb5AndRouteUser();
   }, [navigate]);
 
   function updateTheme() {
