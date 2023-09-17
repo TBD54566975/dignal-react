@@ -1,41 +1,43 @@
-import { useState } from 'react';
-import { RoutePaths } from '../../routes';
+import { useEffect, useState } from 'react';
 import { ProfileProtocol } from '../../util/protocols/profile.protocol';
 import { queryRecords, readRecord } from '../../util/web5';
 import Bat from '../../assets/sample-pictures/bat.png';
 import Elephant from '../../assets/sample-pictures/elephant.png';
 import Fox from '../../assets/sample-pictures/fox.png';
+import ChatLink from './components/ChatLink';
 
 function Sidebar() {
   const [profilePicture, setProfilePicture] = useState('');
   const [profileName, setProfileName] = useState('');
 
-  async function getProfile() {
-    const { records } = await queryRecords({
-      message: {
-        filter: {
-          protocol: ProfileProtocol.protocol,
-          schema: ProfileProtocol.types.profile.schema,
-          dataFormat: 'application/json',
-        },
-      },
-    });
-
-    if (records) {
-      const profiledata = await records[records.length - 1].data.json();
-
-      const { record: photodata } = await readRecord({
+  useEffect(() => {
+    async function getProfile() {
+      const { records } = await queryRecords({
         message: {
-          recordId: profiledata.picture,
+          filter: {
+            protocol: ProfileProtocol.protocol,
+            schema: ProfileProtocol.types.profile.schema,
+            dataFormat: 'application/json',
+          },
         },
       });
-      const blob = await photodata.data.blob();
-      setProfileName(profiledata.name);
-      setProfilePicture(URL.createObjectURL(blob));
-    }
-  }
+      if (records) {
+        const profiledata = await records[records.length - 1].data.json();
 
-  getProfile();
+        const { record: photodata } = await readRecord({
+          message: {
+            recordId: profiledata.picture,
+          },
+        });
+        const blob = await photodata.data.blob();
+        setProfileName(profiledata.name);
+        setProfilePicture(URL.createObjectURL(blob));
+      }
+    }
+    void getProfile();
+  }, []);
+
+  console.log('render - sidebar');
 
   return (
     <div>
@@ -49,34 +51,7 @@ function Sidebar() {
         {chats.map((chat, index) => {
           return (
             <li key={index}>
-              <a href={RoutePaths.CHAT + '/' + chat.id} className="message-row">
-                <div
-                  className={`notification ${
-                    !chat.what.seen ? 'notification-active' : ''
-                  }`}
-                >
-                  <span className="sr-only" aria-live="assertive">
-                    {chat.what.seen ? 'Read' : 'Unread'}
-                  </span>
-                </div>
-                <div className="avatar">
-                  <img src={chat.who.picture} alt="" />
-                </div>
-                <div className="contents">
-                  <div className="message">
-                    <h2>{chat.who.name}</h2>
-                    <p>{chat.what.message}</p>
-                  </div>
-                  <div className="meta">
-                    <p className={!chat.what.seen ? 'text-highlight' : ''}>
-                      {chat.what.timestamp}
-                    </p>
-                    {chat.what.from === 'self' && chat.what.seen && (
-                      <p className="text-xxs">Seen</p>
-                    )}
-                  </div>
-                </div>
-              </a>
+              <ChatLink chat={chat} />
             </li>
           );
         })}
@@ -131,6 +106,8 @@ const chats = [
     id: '789',
   },
 ];
+
+export type singleChat = (typeof chats)[0];
 
 for (const chat of chats) {
   chat.what.timestamp = convertTime(chat.what.timestamp);

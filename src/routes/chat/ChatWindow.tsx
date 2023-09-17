@@ -1,76 +1,42 @@
 import { useEffect, useRef, useState } from 'react';
 import Fox from '../../assets/sample-pictures/fox.png';
+import { useParams } from 'react-router-dom';
+import { queryRecords } from '../../util/web5';
+import ChatDetail from './components/ChatDetail';
 
 function ChatWindow() {
-  const [inThread, setInThread] = useState(false);
-  const latestMessage = useRef<HTMLElement>(null);
-  useEffect(() => {
-    latestMessage.current?.scrollIntoView();
-  }, []);
+  const [isLoading, setIsLoading] = useState(true);
+  const params = useParams();
 
-  function toggleThreadView() {
-    setInThread(!inThread);
-  }
+  useEffect(() => {
+    setIsLoading(true);
+    async function getChatItem() {
+      const { records } = await queryRecords({
+        message: { filter: { dataFormat: 'application/json' } },
+      });
+      const recordData = await records![0].data.json();
+      console.log(params.chatId, recordData);
+      setIsLoading(false);
+    }
+    void getChatItem();
+    latestMessage.current?.scrollIntoView();
+  }, [params.chatId]);
+
+  const latestMessage = useRef<HTMLElement>(null);
+
+  console.log('render - chat window');
 
   return (
     <>
-      <div className="container text-center">
-        <div className="row-px chat-header">
-          <div className="avatar">
-            <img src={currentChat.who.picture} alt="" />
-          </div>
-          <div className="chat-name">
-            <h2>{currentChat.who.name}</h2>
+      {isLoading ? (
+        <div className="layout">
+          <div className="row text-center justify-center m-auto row-px">
+            loading...
           </div>
         </div>
-        <div className="history-window visually-hide-scrollbar">
-          <div className="chat-window">
-            {currentChat.messages.map((chat, index) => {
-              return (
-                <p
-                  key={index}
-                  onDoubleClick={toggleThreadView}
-                  onTouchStart={toggleThreadView}
-                  id={index === currentChat.messages.length - 1 ? 'latest' : ''}
-                  className={`${chat.from === 'self' ? 'sent' : ''} ${
-                    chat.from === 'friend' ? 'received' : ''
-                  }`}
-                >
-                  {chat.message}
-                </p>
-              );
-            })}
-          </div>
-          {inThread && (
-            <div className="thread-window visually-hide-scrollbar">
-              {currentChat.messages.map((chat, index) => {
-                return (
-                  <p
-                    key={index}
-                    onDoubleClick={toggleThreadView}
-                    onTouchStart={toggleThreadView}
-                    id={
-                      index === currentChat.messages.length - 1 ? 'latest' : ''
-                    }
-                    className={`${chat.from === 'self' ? 'sent' : ''} ${
-                      chat.from === 'friend' ? 'received' : ''
-                    }`}
-                  >
-                    {chat.message}
-                  </p>
-                );
-              })}
-            </div>
-          )}
-        </div>
-        <div className="row-px message-input">
-          <input
-            type="text"
-            className="chat-input"
-            placeholder="Enter message"
-          />
-        </div>
-      </div>
+      ) : (
+        <ChatDetail currentChat={currentChat} chatId={params.chatId ?? ''} />
+      )}
     </>
   );
 }
@@ -171,3 +137,5 @@ const currentChat = {
   ],
   id: '123', //recordId of the thread
 };
+
+export type chat = typeof currentChat;
