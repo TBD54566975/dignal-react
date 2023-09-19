@@ -1,5 +1,7 @@
 # Dignal README
 
+** This repo is still a WIP and in pre-alpha / hack mode **
+
 ## Introduction
 
 A decentralized Web5 chat and messaging app built atop the Web5 chat protocol.
