@@ -1,14 +1,45 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ProfileProtocol } from '../../util/protocols/profile.protocol';
-import { queryRecords, readRecord } from '../../util/web5';
+import { did, queryRecords, readRecord, writeRecord } from '../../util/web5';
 import Bat from '../../assets/sample-pictures/bat.png';
 import Elephant from '../../assets/sample-pictures/elephant.png';
 import Fox from '../../assets/sample-pictures/fox.png';
 import ChatLink from './components/ChatLink';
+import { ChatProtocol } from '../../util/protocols/chat.protocol';
+import { useNavigate } from 'react-router-dom';
 
 function Sidebar() {
-  const [profilePicture, setProfilePicture] = useState('');
-  const [profileName, setProfileName] = useState('');
+  const [profile, setProfile] = useState<{ name: string; imgSrc: string }>();
+  const navigate = useNavigate();
+
+  const recipientDidRef = useRef<HTMLInputElement>(null);
+
+  async function startChat() {
+    const profile = {
+      name: 'Dignal Welcome',
+      did: recipientDidRef?.current?.value ?? '123',
+      image: 'test.png',
+    };
+    const { status, record } = await writeRecord({
+      data: {
+        recipients: [profile],
+      },
+      message: {
+        protocol: ChatProtocol.protocol,
+        protocolPath: 'message',
+        schema: ChatProtocol.types.message.schema,
+        recipient: recipientDidRef?.current?.value,
+      },
+    });
+    console.log(status, record);
+    if (record && recipientDidRef && recipientDidRef.current) {
+      const { status: sendStatus } = await record.send(
+        recipientDidRef.current.value,
+      );
+      console.log(sendStatus);
+    }
+    navigate(String(record?.id));
+  }
 
   useEffect(() => {
     async function getProfile() {
@@ -17,7 +48,7 @@ function Sidebar() {
           filter: {
             protocol: ProfileProtocol.protocol,
             schema: ProfileProtocol.types.profile.schema,
-            dataFormat: 'application/json',
+            dataFormat: ProfileProtocol.types.profile.dataFormats[0],
           },
         },
       });
@@ -30,22 +61,59 @@ function Sidebar() {
           },
         });
         const blob = await photodata.data.blob();
-        setProfileName(profiledata.name);
-        setProfilePicture(URL.createObjectURL(blob));
+        setProfile({
+          name: profiledata.name,
+          imgSrc: URL.createObjectURL(blob),
+        });
       }
     }
     void getProfile();
   }, []);
 
-  console.log('render - sidebar');
+  useEffect(() => {
+    async function getChats() {
+      const { records } = await queryRecords({
+        message: {
+          filter: {
+            protocol: ChatProtocol.protocol,
+            schema: ChatProtocol.types.message.schema,
+            dataFormat: ChatProtocol.types.message.dataFormats[0],
+          },
+        },
+      });
+      if (records) {
+        for (const record of records) {
+          const chatListItem = await record.data.json();
+          console.log(record, chatListItem);
+        }
+      }
+    }
+    void getChats();
+  }, []);
 
   return (
     <div>
+      <div className="did-row">
+        <p>My DID:</p>
+        <p>{did}</p>
+      </div>
+      <div className="profile-row">
+        <label htmlFor="recipientDid" className="sr-only">
+          To:{' '}
+        </label>
+        <input
+          id="recipientDid"
+          type="text"
+          ref={recipientDidRef}
+          placeholder="To:"
+        />
+        <button onClick={startChat}>+ New Chat</button>
+      </div>
       <div className="profile-row">
         <div className="avatar">
-          <img src={profilePicture} alt="" />
+          <img src={profile?.imgSrc} alt="" />
         </div>
-        <h1>{profileName}</h1>
+        <h1>{profile?.name}</h1>
       </div>
       <ul className="messages">
         {chats.map((chat, index) => {

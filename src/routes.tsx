@@ -2,9 +2,9 @@ import { RouteObject } from 'react-router-dom';
 import ErrorPage from './error.tsx';
 import App from './routes/App.tsx';
 import Chat from './routes/chat/Chat.tsx';
-import ChatWindow from './routes/chat/ChatWindow.tsx';
 import Onboarding from './routes/onboarding/Onboarding.tsx';
 import Create from './routes/onboarding/create/Create.tsx';
+import ChatDetail from './routes/chat/components/ChatDetail.tsx';
 
 export const enum RoutePaths {
   ROOT = '/',
@@ -25,7 +25,7 @@ export const routes: RouteObject[] = [
         children: [
           {
             path: `${RoutePaths.CHAT}/:chatId`,
-            element: <ChatWindow />,
+            element: <ChatDetail />,
           },
         ],
       },

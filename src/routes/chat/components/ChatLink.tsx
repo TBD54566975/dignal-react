@@ -26,9 +26,7 @@ function ChatLink({ chat }: { chat: singleChat }) {
           <p className={!chat.what.seen ? 'text-highlight' : ''}>
             {chat.what.timestamp}
           </p>
-          {chat.what.from === 'self' && chat.what.seen && (
-            <p className="text-xxs">Seen</p>
-          )}
+          {chat.what.from === 'self' && <p className="text-xxs">Sent</p>}
         </div>
       </div>
     </NavLink>

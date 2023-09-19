@@ -13,15 +13,19 @@ import { ChatProtocol } from '../../../util/protocols/chat.protocol';
 
 function Create() {
   const [profilePicture, setProfilePicture] = useState('');
-  const [profileName, setProfileName] = useState('');
   const [uploadedPhoto, setUploadedPhoto] = useState<Blob>();
   const profilePictureInputRef = useRef<HTMLInputElement>(null);
+  const displayNameInputRef = useRef<HTMLInputElement>(null);
+
   const navigate = useNavigate();
+
   const sampleProfile = sampleDisplayProfiles[randomIndex];
 
   useEffect(() => {
     async function setInitialSampleProfile() {
-      setProfileName(sampleProfile.name);
+      if (displayNameInputRef.current) {
+        displayNameInputRef.current.value = sampleProfile.name;
+      }
       const samplePhoto = await sampleProfile.picture();
       setUploadedPhoto(samplePhoto);
       presentProfilePicture(samplePhoto);
@@ -46,17 +50,7 @@ function Create() {
     presentProfilePicture(blob);
   }
 
-  function addProfileName(e: ChangeEvent<HTMLInputElement>) {
-    setProfileName(e.currentTarget?.value);
-  }
-
-  function logProfile() {
-    setProtocols();
-    navigate(RoutePaths.CHAT);
-  }
-
   async function setProtocols() {
-    // install chat, profile, contacts protocol
     await configureProtocol({
       message: {
         definition: ProfileProtocol,
@@ -68,7 +62,9 @@ function Create() {
         definition: ChatProtocol,
       },
     });
+  }
 
+  async function createProfile() {
     const { record: photoRecord } = await writeRecord({
       data: uploadedPhoto,
       message: {
@@ -79,13 +75,22 @@ function Create() {
     });
 
     await writeRecord({
-      data: { name: profileName, picture: photoRecord?.id },
+      data: {
+        name: displayNameInputRef?.current?.value,
+        picture: photoRecord?.id,
+      },
       message: {
         protocol: ProfileProtocol.protocol,
         protocolPath: 'profile',
         schema: ProfileProtocol.types.profile.schema,
       },
     });
+  }
+
+  async function saveProfileAndNavigate() {
+    await setProtocols();
+    await createProfile();
+    navigate(RoutePaths.CHAT);
   }
 
   return (
@@ -102,7 +107,7 @@ function Create() {
             <img
               id="profilePicturePreview"
               src={profilePicture}
-              alt={`Profile picture for ${profileName}`}
+              alt={`Profile picture for ${displayNameInputRef?.current?.value}`}
             />
             <div className="profile-picture-icon">
               <img src={Camera} alt="" />
@@ -130,11 +135,10 @@ function Create() {
             name="displayName"
             type="text"
             placeholder="Display name"
-            value={profileName}
-            onChange={addProfileName}
+            ref={displayNameInputRef}
           />
         </div>
-        <button onClick={logProfile}>Continue</button>
+        <button onClick={saveProfileAndNavigate}>Continue</button>
         <p>
           Your profile has a unique identifier called a DID that you'll share
           with others so they can find you on Dignal.

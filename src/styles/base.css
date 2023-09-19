@@ -44,6 +44,12 @@ select {
   width: 100%;
 }
 
+.button-row {
+  display: flex;
+  margin: 1rem;
+  gap: 1rem;
+}
+
 .row {
   display: flex;
   flex-direction: column;
@@ -115,12 +121,16 @@ select {
 /* Chat.tsx */
 .chat-container {
   display: flex;
-  max-height: calc(100dvh - 58px);
+  height: calc(
+    100dvh - 58px - 2rem - 2rem
+  ); /* 100% viewport height - button height - button row block padding - ???*/
+  margin-block: var(--sp-lg);
 }
 
 /* Sidebar.tsx */
 .sidebar {
-  max-width: 680px;
+  max-width: 580px;
+  overflow-y: scroll;
 }
 .profile-row {
   display: flex;
@@ -227,6 +237,7 @@ a.message-row:focus {
 }
 .history-window {
   overflow-y: scroll;
+  height: 100%;
 }
 .chat-window {
   background: var(--color-background-shade);
@@ -234,11 +245,10 @@ a.message-row:focus {
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-block: var(--sp-lg);
 }
 .chat-window .message-input {
   position: sticky;
-  bottom: 0;
+  bottom: 1px;
   background: var(--color-background-shade);
 }
 .chat-window .message-input input:is([type='text']) {
@@ -295,4 +305,19 @@ a.message-row:focus {
 .chat-input {
   border-radius: var(--border-radius-lg);
   box-shadow: var(--box-shadow);
+}
+
+.chat-input:focus-visible {
+  outline: var(--color-accent) solid 1px;
+}
+
+#latest {
+  overflow-anchor: auto;
+}
+
+.did-row {
+  line-break: anywhere;
+  overflow-y: scroll;
+  height: 200px;
+  padding: 2rem;
 }
