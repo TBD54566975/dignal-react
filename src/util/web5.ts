@@ -16,13 +16,13 @@ import {
 import { ChatProtocol } from './protocols/chat.protocol';
 import { RoutePaths } from '../routes';
 
-let web5: Web5;
-let did: string;
+export let web5: Web5;
+export let did: string;
 
 export async function connectWeb5() {
-  const { web5: connectedWeb5, did: connectedDid } = await Web5.connect();
-  [web5, did] = [connectedWeb5, connectedDid];
-  return { web5, did };
+  const web5Connect = await Web5.connect();
+  [web5, did] = [web5Connect.web5, web5Connect.did];
+  return web5Connect;
 }
 
 export async function getWeb5Route() {
@@ -49,59 +49,35 @@ export async function getWeb5Route() {
 export async function writeRecord(
   writeRequest: RecordsWriteRequest,
 ): Promise<RecordsWriteResponse> {
-  const { status, record } = await web5.dwn.records.write(writeRequest);
-  return {
-    status,
-    record,
-  };
+  return web5.dwn.records.write(writeRequest);
 }
 
 export async function queryRecords(
   queryRequest: RecordsQueryRequest,
 ): Promise<RecordsQueryResponse> {
-  const { status, records } = await web5.dwn.records.query(queryRequest);
-  return {
-    status,
-    records,
-  };
+  return web5.dwn.records.query(queryRequest);
 }
 
 export async function readRecord(
   readRequest: RecordsReadRequest,
 ): Promise<RecordsReadResponse> {
-  const { status, record } = await web5.dwn.records.read(readRequest);
-  return {
-    status,
-    record,
-  };
+  return web5.dwn.records.read(readRequest);
 }
 
 export async function deleteRecord(
   deleteRequest: RecordsDeleteRequest,
 ): Promise<RecordsDeleteResponse> {
-  const { status } = await web5.dwn.records.delete(deleteRequest);
-  return {
-    status,
-  };
+  return web5.dwn.records.delete(deleteRequest);
 }
 
 export async function configureProtocol(
   configureRequest: ProtocolsConfigureRequest,
 ): Promise<ProtocolsConfigureResponse> {
-  const { status, protocol } =
-    await web5.dwn.protocols.configure(configureRequest);
-  return {
-    status,
-    protocol,
-  };
+  return web5.dwn.protocols.configure(configureRequest);
 }
 
 export async function queryProtocols(
   queryRequest: ProtocolsQueryRequest,
 ): Promise<ProtocolsQueryResponse> {
-  const { status, protocols } = await web5.dwn.protocols.query(queryRequest);
-  return {
-    status,
-    protocols,
-  };
+  return web5.dwn.protocols.query(queryRequest);
 }

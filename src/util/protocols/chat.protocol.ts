@@ -10,6 +10,10 @@ export const ChatProtocol = {
       schema: 'https://schema.zion.fyi/chat/message/v2',
       dataFormats: ['application/json'],
     },
+    reply: {
+      schema: 'https://schema.zion.fyi/chat/message/v2',
+      dataFormats: ['application/json'],
+    },
     reaction: {
       schema: 'reaction',
       dataFormats: ['application/json'],
@@ -51,11 +55,6 @@ export const ChatProtocol = {
           who: 'anyone',
           can: 'write',
         },
-        {
-          who: 'recipient',
-          of: 'thread/maintainer',
-          can: 'write',
-        },
       ],
     },
     thread: {
@@ -64,163 +63,63 @@ export const ChatProtocol = {
           who: 'anyone',
           can: 'write',
         },
+      ],
+    },
+    maintainer: {
+      $actions: [
         {
-          who: 'recipient',
-          of: 'thread/admin',
-          can: 'write',
-        },
-        {
-          who: 'recipient',
-          of: 'thread/admin',
+          who: 'anyone',
           can: 'write',
         },
       ],
-      maintainer: {
-        $actions: [
-          {
-            who: 'recipient',
-            of: 'thread/admin',
-            can: 'write',
-          },
-          {
-            who: 'recipient',
-            of: 'thread/admin',
-            can: 'write',
-          },
-        ],
-      },
-      participant: {
-        $actions: [
-          {
-            who: 'anyone',
-            can: 'write',
-          },
-          {
-            who: 'recipient',
-            of: 'thread/maintainer',
-            can: 'write',
-          },
-          {
-            who: 'recipient',
-            of: 'thread/maintainer',
-            can: 'write',
-          },
-          {
-            who: 'recipient',
-            of: 'thread/admin',
-            can: 'write',
-          },
-          {
-            who: 'recipient',
-            of: 'thread/admin',
-            can: 'write',
-          },
-        ],
-      },
-      message: {
+    },
+    participant: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'write',
+        },
+      ],
+    },
+    message: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'write',
+        },
+      ],
+      reply: {
         $actions: [
           {
             who: 'anyone',
             can: 'write',
           },
-          {
-            who: 'author',
-            of: 'thread/participant',
-            can: 'write',
-          },
-          {
-            who: 'recipient',
-            of: 'thread/participant',
-            can: 'write',
-          },
-          {
-            who: 'recipient',
-            of: 'thread/maintainer',
-            can: 'write',
-          },
-          {
-            who: 'recipient',
-            of: 'thread/admin',
-            can: 'write',
-          },
-          {
-            who: 'recipient',
-            of: 'thread/maintainer',
-            can: 'write',
-          },
-          {
-            who: 'recipient',
-            of: 'thread/admin',
-            can: 'write',
-          },
         ],
-        block: {
-          $actions: [
-            {
-              who: 'anyone',
-              can: 'write',
-            },
-            {
-              who: 'author',
-              of: 'thread/participant',
-              can: 'write',
-            },
-            {
-              who: 'recipient',
-              of: 'thread/participant',
-              can: 'write',
-            },
-            {
-              who: 'recipient',
-              of: 'thread/maintainer',
-              can: 'write',
-            },
-            {
-              who: 'recipient',
-              of: 'thread/admin',
-              can: 'write',
-            },
-            {
-              who: 'recipient',
-              of: 'thread/maintainer',
-              can: 'write',
-            },
-            {
-              who: 'recipient',
-              of: 'thread/admin',
-              can: 'write',
-            },
-          ],
-        },
-        attachment: {
-          $actions: [
-            {
-              who: 'author',
-              of: 'thread/message',
-              can: 'write',
-            },
-          ],
-        },
-        reaction: {
-          $actions: [
-            {
-              who: 'recipient',
-              of: 'thread/participant',
-              can: 'write',
-            },
-            {
-              who: 'recipient',
-              of: 'thread/maintainer',
-              can: 'write',
-            },
-            {
-              who: 'recipient',
-              of: 'thread/admin',
-              can: 'write',
-            },
-          ],
-        },
       },
+    },
+    attachment: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'write',
+        },
+      ],
+    },
+    reaction: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'write',
+        },
+      ],
+    },
+    block: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'write',
+        },
+      ],
     },
   },
 };
