@@ -22,11 +22,25 @@ function App() {
     setThemeOptions(theme);
   }
 
+  async function clearDb() {
+    const databases = await indexedDB.databases();
+    for (const database of databases) {
+      if (database.name) {
+        indexedDB.deleteDatabase(database.name);
+      }
+    }
+    console.log('Cleared databases');
+    navigate('/onboarding');
+  }
+
   return (
     <>
-      <button onClick={updateTheme}>
-        Switch to {themeOptions.altTheme} theme
-      </button>
+      <div className="button-row">
+        <button onClick={updateTheme}>
+          Switch to {themeOptions.altTheme} theme
+        </button>
+        <button onClick={clearDb}>Reset datastore</button>
+      </div>
       {isLoading ? (
         <div className="layout">
           <div className="row text-center justify-center m-auto row-px">
