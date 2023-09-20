@@ -20,7 +20,9 @@ export let web5: Web5;
 export let userDid: string;
 
 export async function connectWeb5() {
-  const web5Connect = await Web5.connect();
+  const web5Connect = await Web5.connect({
+    sync: '2s',
+  });
   [web5, userDid] = [web5Connect.web5, web5Connect.did];
   return web5Connect;
 }
