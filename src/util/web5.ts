@@ -17,16 +17,16 @@ import { ChatProtocol } from './protocols/chat.protocol';
 import { RoutePaths } from '../routes';
 
 export let web5: Web5;
-export let did: string;
+export let userDid: string;
 
 export async function connectWeb5() {
   const web5Connect = await Web5.connect();
-  [web5, did] = [web5Connect.web5, web5Connect.did];
+  [web5, userDid] = [web5Connect.web5, web5Connect.did];
   return web5Connect;
 }
 
 export async function getWeb5Route() {
-  const { protocols } = await web5.dwn.protocols.query({
+  const { protocols } = await queryProtocols({
     message: {
       filter: {
         protocol: ChatProtocol.protocol,

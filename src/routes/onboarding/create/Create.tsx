@@ -7,7 +7,7 @@ import Fox from '../../../assets/sample-pictures/fox.png';
 import Camera from '../../../assets/icons/camera.svg';
 import { useNavigate } from 'react-router';
 import { RoutePaths } from '../../../routes';
-import { configureProtocol, writeRecord } from '../../../util/web5';
+import { configureProtocol, userDid, writeRecord } from '../../../util/web5';
 import { ProfileProtocol } from '../../../util/protocols/profile.protocol';
 import { ChatProtocol } from '../../../util/protocols/chat.protocol';
 
@@ -51,21 +51,24 @@ function Create() {
   }
 
   async function setProtocols() {
-    await configureProtocol({
+    const { protocol: profileProtocolResponse } = await configureProtocol({
       message: {
         definition: ProfileProtocol,
       },
     });
 
-    await configureProtocol({
+    const { protocol: chatProtocolResponse } = await configureProtocol({
       message: {
         definition: ChatProtocol,
       },
     });
+
+    await profileProtocolResponse?.send(userDid);
+    await chatProtocolResponse?.send(userDid);
   }
 
   async function createProfile() {
-    const { record: photoRecord } = await writeRecord({
+    const { record: photoRecord, status: photoStatus } = await writeRecord({
       data: uploadedPhoto,
       message: {
         protocol: ProfileProtocol.protocol,
@@ -74,7 +77,7 @@ function Create() {
       },
     });
 
-    await writeRecord({
+    const { record: profileRecord, status: profileStatus } = await writeRecord({
       data: {
         name: displayNameInputRef?.current?.value,
         picture: photoRecord?.id,
@@ -85,6 +88,10 @@ function Create() {
         schema: ProfileProtocol.types.profile.schema,
       },
     });
+    await photoRecord?.send(userDid);
+    await profileRecord?.send(userDid);
+    console.log(photoStatus, photoRecord);
+    console.log(profileStatus, profileRecord);
   }
 
   async function saveProfileAndNavigate() {

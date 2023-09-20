@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { ProfileProtocol } from '../../util/protocols/profile.protocol';
-import { did, queryRecords, readRecord, writeRecord } from '../../util/web5';
+import {
+  userDid,
+  queryRecords,
+  readRecord,
+  writeRecord,
+} from '../../util/web5';
 import Bat from '../../assets/sample-pictures/bat.png';
 import Elephant from '../../assets/sample-pictures/elephant.png';
 import Fox from '../../assets/sample-pictures/fox.png';
@@ -15,30 +20,65 @@ function Sidebar() {
   const recipientDidRef = useRef<HTMLInputElement>(null);
 
   async function startChat() {
-    const profile = {
-      name: 'Dignal Welcome',
-      did: recipientDidRef?.current?.value ?? '123',
-      image: 'test.png',
-    };
-    const { status, record } = await writeRecord({
-      data: {
-        recipients: [profile],
-      },
+    if (recipientDidRef?.current?.value) {
+      const { status, record } = await writeRecord({
+        data: {
+          recipients: [recipientDidRef.current.value, userDid],
+        },
+        message: {
+          protocol: ChatProtocol.protocol,
+          protocolPath: 'message',
+          schema: ChatProtocol.types.message.schema,
+        },
+      });
+      console.log(status, record);
+      if (record && recipientDidRef && recipientDidRef.current) {
+        const { status: sendStatus } = await record.send(
+          recipientDidRef.current.value,
+        );
+        console.log(sendStatus);
+      }
+      navigate(String(record?.id));
+    }
+  }
+
+  async function getFriendProfile() {
+    const { records: profileRecords, status: profileStatus } =
+      await queryRecords({
+        from: recipientDidRef?.current?.value,
+        message: {
+          filter: {
+            protocol: ProfileProtocol.protocol,
+          },
+        },
+      });
+    console.log(profileStatus, profileRecords);
+    for (const profileRecord of profileRecords!) {
+      if (
+        ProfileProtocol.types.photo.dataFormats.includes(
+          profileRecord.dataFormat,
+        )
+      ) {
+        console.log(await profileRecord.data.blob());
+      } else {
+        console.log(await profileRecord.data.json());
+      }
+    }
+  }
+
+  async function getFriendChat() {
+    const { records: chatRecords, status: chatStatus } = await queryRecords({
+      from: recipientDidRef?.current?.value,
       message: {
-        protocol: ChatProtocol.protocol,
-        protocolPath: 'message',
-        schema: ChatProtocol.types.message.schema,
-        recipient: recipientDidRef?.current?.value,
+        filter: {
+          protocol: ChatProtocol.protocol,
+        },
       },
     });
-    console.log(status, record);
-    if (record && recipientDidRef && recipientDidRef.current) {
-      const { status: sendStatus } = await record.send(
-        recipientDidRef.current.value,
-      );
-      console.log(sendStatus);
+    console.log(chatStatus, chatRecords);
+    for (const chatRecord of chatRecords!) {
+      console.log(await chatRecord.data.json());
     }
-    navigate(String(record?.id));
   }
 
   useEffect(() => {
@@ -47,6 +87,7 @@ function Sidebar() {
         message: {
           filter: {
             protocol: ProfileProtocol.protocol,
+            protocolPath: 'profile',
             schema: ProfileProtocol.types.profile.schema,
             dataFormat: ProfileProtocol.types.profile.dataFormats[0],
           },
@@ -70,44 +111,82 @@ function Sidebar() {
     void getProfile();
   }, []);
 
+  const [chats, setChats] = useState<singleChat[]>([]);
+
   useEffect(() => {
     async function getChats() {
       const { records } = await queryRecords({
         message: {
           filter: {
             protocol: ChatProtocol.protocol,
+            protocolPath: 'message',
             schema: ChatProtocol.types.message.schema,
             dataFormat: ChatProtocol.types.message.dataFormats[0],
           },
         },
       });
+      console.log(records);
       if (records) {
+        const dwnChats = [];
         for (const record of records) {
           const chatListItem = await record.data.json();
           console.log(record, chatListItem);
+          const participants = chatListItem.recipients.filter(
+            (recipientDid: string) => recipientDid !== userDid,
+          );
+          const dwnChat = {
+            who: {
+              name:
+                participants.length > 1
+                  ? 'Group'
+                  : participants[0].slice(0, 24), //arbitrary slice
+              picture: Fox,
+            },
+            what: {
+              message: 'Message',
+              timestamp: convertTime(record.dateModified),
+              from:
+                chatListItem[chatListItem.length - 1] === userDid
+                  ? 'self'
+                  : 'friend',
+              delivered: true,
+              seen: true,
+            },
+            id: record.id,
+          };
+          dwnChats.push(dwnChat);
         }
+        setChats(dwnChats);
       }
     }
     void getChats();
   }, []);
 
+  function copyDid() {
+    navigator.clipboard.writeText(userDid);
+  }
+
   return (
     <div>
-      <div className="did-row">
-        <p>My DID:</p>
-        <p>{did}</p>
+      <div className="profile-row">
+        <button onClick={copyDid}>Copy my DID</button>
       </div>
       <div className="profile-row">
         <label htmlFor="recipientDid" className="sr-only">
           To:{' '}
         </label>
         <input
+          autoComplete="off"
           id="recipientDid"
           type="text"
           ref={recipientDidRef}
           placeholder="To:"
         />
         <button onClick={startChat}>+ New Chat</button>
+      </div>
+      <div className="profile-row">
+        <button onClick={getFriendProfile}>Get profile</button>
+        <button onClick={getFriendChat}>Get chat</button>
       </div>
       <div className="profile-row">
         <div className="avatar">
@@ -130,7 +209,7 @@ function Sidebar() {
 
 export default Sidebar;
 
-const chats = [
+const mockChats = [
   {
     who: {
       name: 'Dignal Welcome Chat',
@@ -175,9 +254,9 @@ const chats = [
   },
 ];
 
-export type singleChat = (typeof chats)[0];
+export type singleChat = (typeof mockChats)[0];
 
-for (const chat of chats) {
+for (const chat of mockChats) {
   chat.what.timestamp = convertTime(chat.what.timestamp);
 }
 

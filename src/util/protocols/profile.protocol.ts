@@ -1,5 +1,5 @@
 export const ProfileProtocol = {
-  published: false,
+  published: true,
   protocol: 'https://identity.foundation/protocols/person',
   types: {
     name: {
@@ -37,59 +37,85 @@ export const ProfileProtocol = {
     },
   },
   structure: {
-    profile: {
-      name: {
-        $actions: [
-          {
-            who: 'anyone',
-            can: 'read',
-          },
-        ],
-      },
-      social: {
-        $actions: [
-          {
-            who: 'anyone',
-            can: 'read',
-          },
-        ],
-      },
-      icon: {
-        $actions: [
-          {
-            who: 'anyone',
-            can: 'read',
-          },
-        ],
-      },
-      avatar: {
-        $actions: [
-          {
-            who: 'anyone',
-            can: 'read',
-          },
-        ],
-      },
-      photo: {
-        $actions: [
-          {
-            who: 'anyone',
-            can: 'read',
-          },
-        ],
-      },
-      messaging: {},
-      address: {},
-      phone: {},
-      profile: {
-        $actions: [
-          {
-            who: 'anyone',
-            can: 'read',
-          },
-        ],
-      },
+    name: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'read',
+        },
+      ],
     },
-    photo: {},
+    social: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'read',
+        },
+      ],
+    },
+    icon: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'read',
+        },
+      ],
+    },
+    avatar: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'read',
+        },
+      ],
+    },
+    messaging: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'read',
+        },
+      ],
+    },
+    address: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'read',
+        },
+      ],
+    },
+    phone: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'read',
+        },
+      ],
+    },
+    photo: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'write',
+        },
+        {
+          who: 'anyone',
+          can: 'read',
+        },
+      ],
+    },
+    profile: {
+      $actions: [
+        {
+          who: 'anyone',
+          can: 'write',
+        },
+        {
+          who: 'anyone',
+          can: 'read',
+        },
+      ],
+    },
   },
 };

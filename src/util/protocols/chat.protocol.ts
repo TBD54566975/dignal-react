@@ -1,6 +1,6 @@
 export const ChatProtocol = {
-  published: false,
   protocol: 'https://tbddev.org/protocols/chat',
+  published: true,
   types: {
     thread: {
       schema: 'https://schema.zion.fyi/chat/thread/v2',
@@ -87,12 +87,20 @@ export const ChatProtocol = {
           who: 'anyone',
           can: 'write',
         },
+        {
+          who: 'anyone',
+          can: 'read',
+        },
       ],
       reply: {
         $actions: [
           {
             who: 'anyone',
             can: 'write',
+          },
+          {
+            who: 'anyone',
+            can: 'read',
           },
         ],
       },
