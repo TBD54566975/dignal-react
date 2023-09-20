@@ -1,13 +1,45 @@
-import { KeyboardEvent, useEffect, useState } from 'react';
+import { KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import Fox from '../../../assets/sample-pictures/fox.png';
+import Fox from '../../../../assets/sample-pictures/fox.png';
 import {
   userDid,
   queryRecords,
   readRecord,
   writeRecord,
-} from '../../../util/web5';
-import { ChatProtocol } from '../../../util/protocols/chat.protocol';
+} from '../../../../util/web5';
+import { ChatProtocol } from '../../../../util/protocols/chat.protocol';
+
+async function populateChats(contextId: string) {
+  const { records } = await queryRecords({
+    message: {
+      filter: { contextId, protocolPath: 'message/reply' },
+    },
+  });
+  const messages: {
+    message: string;
+    timestamp: string;
+    from: string;
+    delivered: boolean;
+    seen: boolean;
+    recordId: string;
+  }[] = [];
+  if (records) {
+    for (const record of records) {
+      const data = await record.data.json();
+      messages.push({
+        message: data.text,
+        timestamp: record.dateModified,
+        //TODO: change to `record.author`
+        from: userDid === data.author ? 'self' : 'friend',
+        delivered: true,
+        seen: true,
+        recordId: record.id,
+      });
+    }
+  }
+  console.log('pop chats');
+  return messages;
+}
 
 function ChatDetail() {
   const chatId = useOutletContext<string>();
@@ -25,42 +57,21 @@ function ChatDetail() {
     });
   }, []);
 
-  async function populateChats() {
-    const { records } = await queryRecords({
-      message: {
-        filter: { contextId: chatId, protocolPath: 'message/reply' },
-      },
-    });
-    const messages: {
-      message: string;
-      timestamp: string;
-      from: string;
-      delivered: boolean;
-      seen: boolean;
-      recordId: string;
-    }[] = [];
-    if (records) {
-      for (const record of records) {
-        const data = await record.data.json();
-        messages.push({
-          message: data.text,
-          timestamp: record.dateModified,
-          //TODO: change to `record.author`
-          from: userDid === data.author ? 'self' : 'friend',
-          delivered: true,
-          seen: true,
-          recordId: record.id,
-        });
-      }
-    }
-    setCurrentMessages(messages);
-  }
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      const messages = await populateChats(chatId);
+      setCurrentMessages(messages);
+    }, 5000);
+    return () => clearInterval(intervalId);
+  }, [chatId]);
 
-  populateChats();
+  // console.log('render chatDetail');
 
   useEffect(() => {
     setIsLoading(true);
     async function getChatItem() {
+      const messages = await populateChats(chatId);
+      setCurrentMessages(messages);
       const { record } = await readRecord({
         message: { recordId: chatId },
       });
@@ -91,7 +102,7 @@ function ChatDetail() {
       },
     });
     if (record) {
-      console.log(record);
+      // console.log(record);
       const { record: chatIdRecord } = await readRecord({
         message: {
           recordId: chatId,
@@ -106,8 +117,8 @@ function ChatDetail() {
         console.log(status);
       }
     }
-
-    populateChats();
+    const messages = await populateChats(chatId);
+    setCurrentMessages(messages);
   }
 
   function sendMessage(e: KeyboardEvent<HTMLInputElement> & HTMLInputElement) {
@@ -118,6 +129,17 @@ function ChatDetail() {
       e.currentTarget.value = '';
     }
   }
+
+  const chatContainer = useRef<HTMLDivElement>(null);
+  const chatElement = useRef<HTMLParagraphElement>(null);
+
+  // useEffect(() => {
+  //   if (chatContainer.current && chatElement.current) {
+  //     console.log(chatElement.current.scrollHeight);
+  //     chatElement.current.scrollIntoView();
+  //     // chatContainer.current.scrollTo({ top: chatElement.current.scrollHeight });
+  //   }
+  // }, [currentMessages.length]);
 
   return (
     <>
@@ -146,11 +168,12 @@ function ChatDetail() {
             </div>
           </div>
           <div className="history-window visually-hide-scrollbar">
-            <div className="chat-window">
+            <div className="chat-window" ref={chatContainer}>
               {currentMessages.map((chat, index) => {
                 return (
                   <p
                     key={index}
+                    ref={chatElement}
                     data-record-id={chat.recordId}
                     className={`${chat.from === 'self' ? 'sent' : ''} ${
                       chat.from === 'friend' ? 'received' : ''

@@ -18,7 +18,7 @@ function App() {
   }, [navigate]);
 
   function updateTheme() {
-    const theme = setLocalTheme();
+    const theme = updateLocalTheme();
     setThemeOptions(theme);
   }
 
@@ -68,7 +68,7 @@ function setInitialTheme() {
   return { currentTheme, altTheme };
 }
 
-function setLocalTheme() {
+function updateLocalTheme() {
   const isDark = document.body.classList.toggle('dark');
   const currentTheme = isDark ? 'dark' : 'light';
   const altTheme = isDark ? 'light' : 'dark';

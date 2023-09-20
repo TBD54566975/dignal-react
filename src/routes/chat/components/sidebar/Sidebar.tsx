@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { ProfileProtocol } from '../../util/protocols/profile.protocol';
+import { ProfileProtocol } from '../../../../util/protocols/profile.protocol';
 import {
   userDid,
   queryRecords,
   readRecord,
   writeRecord,
-} from '../../util/web5';
-import Bat from '../../assets/sample-pictures/bat.png';
-import Elephant from '../../assets/sample-pictures/elephant.png';
-import Fox from '../../assets/sample-pictures/fox.png';
-import ChatLink from './components/ChatLink';
-import { ChatProtocol } from '../../util/protocols/chat.protocol';
+} from '../../../../util/web5';
+import Bat from '../../../../assets/sample-pictures/bat.png';
+import Elephant from '../../../../assets/sample-pictures/elephant.png';
+import Fox from '../../../../assets/sample-pictures/fox.png';
+import ChatLink from './ChatLink';
+import { ChatProtocol } from '../../../../util/protocols/chat.protocol';
 import { useNavigate } from 'react-router-dom';
 
 function Sidebar() {
@@ -21,14 +21,54 @@ function Sidebar() {
 
   async function startChat() {
     if (recipientDidRef?.current?.value) {
+      // In single chat case, if group chat, query, consume, and filter instead
+      const recipient = recipientDidRef.current.value;
+      const { records: duplicateRecordsFrom } = await queryRecords({
+        from: recipient,
+        message: {
+          filter: {
+            protocol: ChatProtocol.protocol,
+            protocolPath: 'message',
+          },
+        },
+      });
+      if (duplicateRecordsFrom && duplicateRecordsFrom.length > 0) {
+        if (duplicateRecordsFrom.length > 1) {
+          console.warn(
+            'More than 1 existing record found for protocolPath `message`',
+          );
+        }
+        navigate(String(duplicateRecordsFrom[0].id));
+        return;
+      }
+      const { records: duplicateRecordsTo } = await queryRecords({
+        message: {
+          filter: {
+            protocol: ChatProtocol.protocol,
+            protocolPath: 'message',
+            recipient,
+          },
+        },
+      });
+      if (duplicateRecordsTo && duplicateRecordsTo.length > 0) {
+        if (duplicateRecordsTo.length > 1) {
+          console.warn(
+            'More than 1 existing record found for protocolPath `message`',
+          );
+        }
+        navigate(String(duplicateRecordsTo[0].id));
+        return;
+      }
+      console.log('reached past the logic');
       const { status, record } = await writeRecord({
         data: {
-          recipients: [recipientDidRef.current.value, userDid],
+          recipients: [recipient, userDid],
         },
         message: {
           protocol: ChatProtocol.protocol,
           protocolPath: 'message',
           schema: ChatProtocol.types.message.schema,
+          recipient: userDid,
         },
       });
       console.log(status, record);
@@ -114,52 +154,19 @@ function Sidebar() {
   const [chats, setChats] = useState<singleChat[]>([]);
 
   useEffect(() => {
-    async function getChats() {
-      const { records } = await queryRecords({
-        message: {
-          filter: {
-            protocol: ChatProtocol.protocol,
-            protocolPath: 'message',
-            schema: ChatProtocol.types.message.schema,
-            dataFormat: ChatProtocol.types.message.dataFormats[0],
-          },
-        },
-      });
-      console.log(records);
-      if (records) {
-        const dwnChats = [];
-        for (const record of records) {
-          const chatListItem = await record.data.json();
-          console.log(record, chatListItem);
-          const participants = chatListItem.recipients.filter(
-            (recipientDid: string) => recipientDid !== userDid,
-          );
-          const dwnChat = {
-            who: {
-              name:
-                participants.length > 1
-                  ? 'Group'
-                  : participants[0].slice(0, 24), //arbitrary slice
-              picture: Fox,
-            },
-            what: {
-              message: 'Message',
-              timestamp: convertTime(record.dateModified),
-              from:
-                chatListItem[chatListItem.length - 1] === userDid
-                  ? 'self'
-                  : 'friend',
-              delivered: true,
-              seen: true,
-            },
-            id: record.id,
-          };
-          dwnChats.push(dwnChat);
-        }
-        setChats(dwnChats);
-      }
+    async function setInitialChats() {
+      const dwnChats = await populateChats();
+      setChats(dwnChats);
     }
-    void getChats();
+    void setInitialChats();
+  }, []);
+
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      const dwnChats = await populateChats();
+      setChats(dwnChats);
+    }, 5000);
+    return () => clearInterval(intervalId);
   }, []);
 
   function copyDid() {
@@ -292,4 +299,48 @@ function convertTime(time: string) {
     ).padStart(2, '0')}-${String(inputTime.getDate()).padStart(2, '0')}`;
     return formattedDate;
   }
+}
+
+async function populateChats() {
+  const dwnChats = [];
+  const { records } = await queryRecords({
+    message: {
+      filter: {
+        protocol: ChatProtocol.protocol,
+        protocolPath: 'message',
+        schema: ChatProtocol.types.message.schema,
+        dataFormat: ChatProtocol.types.message.dataFormats[0],
+      },
+    },
+  });
+  console.log(records);
+  if (records) {
+    for (const record of records) {
+      const chatListItem = await record.data.json();
+      console.log(record, chatListItem);
+      const participants = chatListItem.recipients.filter(
+        (recipientDid: string) => recipientDid !== userDid,
+      );
+      const dwnChat = {
+        who: {
+          name:
+            participants.length > 1 ? 'Group' : participants[0].slice(0, 24), //arbitrary slice
+          picture: Fox,
+        },
+        what: {
+          message: 'Message',
+          timestamp: convertTime(record.dateModified),
+          from:
+            chatListItem[chatListItem.length - 1] === userDid
+              ? 'self'
+              : 'friend',
+          delivered: true,
+          seen: true,
+        },
+        id: record.id,
+      };
+      dwnChats.push(dwnChat);
+    }
+  }
+  return dwnChats;
 }

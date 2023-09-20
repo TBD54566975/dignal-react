@@ -132,6 +132,7 @@ select {
 .sidebar {
   max-width: 580px;
   overflow-y: scroll;
+  flex: 1;
 }
 .profile-row {
   display: flex;
@@ -263,6 +264,7 @@ a.message-row:focus {
 }
 .chat-name {
   margin-block: 1rem;
+  line-break: anywhere;
 }
 .visually-hide-scrollbar {
   -ms-overflow-style: none;

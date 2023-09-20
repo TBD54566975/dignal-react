@@ -4,7 +4,7 @@ import App from './routes/App.tsx';
 import Chat from './routes/chat/Chat.tsx';
 import Onboarding from './routes/onboarding/Onboarding.tsx';
 import Create from './routes/onboarding/create/Create.tsx';
-import ChatDetail from './routes/chat/components/ChatDetail.tsx';
+import ChatDetail from './routes/chat/components/chat-window/ChatDetail.tsx';
 
 export const enum RoutePaths {
   ROOT = '/',

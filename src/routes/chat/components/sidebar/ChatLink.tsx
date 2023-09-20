@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
-import { RoutePaths } from '../../../routes';
-import { singleChat } from '../Sidebar';
+import { RoutePaths } from '../../../../routes';
+import { singleChat } from './Sidebar';
 
 function ChatLink({ chat }: { chat: singleChat }) {
   return (
