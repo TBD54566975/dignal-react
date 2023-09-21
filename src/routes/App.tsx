@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router';
-import { connectWeb5, getWeb5Route } from '../util/web5';
+import { connectWeb5, getWeb5Route } from '@/util/web5';
+import { RoutePaths } from '@/routes';
+import { setInitialTheme, updateLocalTheme } from '@routes/theme';
+import { resetIndexedDb } from '@util/helpers';
 
 function App() {
   const [themeOptions, setThemeOptions] = useState(setInitialTheme());
@@ -22,15 +25,9 @@ function App() {
     setThemeOptions(theme);
   }
 
-  async function clearDb() {
-    const databases = await indexedDB.databases();
-    for (const database of databases) {
-      if (database.name) {
-        indexedDB.deleteDatabase(database.name);
-      }
-    }
-    console.log('Cleared databases');
-    navigate('/onboarding');
+  async function resetDb() {
+    await resetIndexedDb();
+    navigate(RoutePaths.ONBOARDING);
   }
 
   return (
@@ -39,7 +36,7 @@ function App() {
         <button onClick={updateTheme}>
           Switch to {themeOptions.altTheme} theme
         </button>
-        <button onClick={clearDb}>Reset datastore</button>
+        <button onClick={resetDb}>Reset datastore</button>
       </div>
       {isLoading ? (
         <div className="layout">
@@ -55,23 +52,3 @@ function App() {
 }
 
 export default App;
-
-function setInitialTheme() {
-  const currentTheme =
-    localStorage.getItem('themePreference') ??
-    (window.matchMedia &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light');
-  document.body.classList.add(currentTheme ?? '');
-  const altTheme = currentTheme === 'light' ? 'dark' : 'light';
-  return { currentTheme, altTheme };
-}
-
-function updateLocalTheme() {
-  const isDark = document.body.classList.toggle('dark');
-  const currentTheme = isDark ? 'dark' : 'light';
-  const altTheme = isDark ? 'light' : 'dark';
-  localStorage.setItem('themePreference', currentTheme);
-  return { currentTheme, altTheme };
-}

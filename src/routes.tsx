@@ -1,10 +1,10 @@
 import { RouteObject } from 'react-router-dom';
 import ErrorPage from './error.tsx';
-import App from './routes/App.tsx';
-import Chat from './routes/chat/Chat.tsx';
-import Onboarding from './routes/onboarding/Onboarding.tsx';
-import Create from './routes/onboarding/create/Create.tsx';
-import ChatDetail from './routes/chat/components/chat-window/ChatDetail.tsx';
+import App from '@routes/App.tsx';
+import Chat from '@routes/chat/Chat.tsx';
+import ChatDetail from '@routes/chat/components/chat-window/ChatDetail.tsx';
+import Onboarding from '@routes/onboarding/Onboarding.tsx';
+import Create from '@routes/onboarding/create/Create.tsx';
 
 export const enum RoutePaths {
   ROOT = '/',

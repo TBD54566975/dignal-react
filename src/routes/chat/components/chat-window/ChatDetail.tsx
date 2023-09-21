@@ -1,13 +1,8 @@
 import { KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import Fox from '../../../../assets/sample-pictures/fox.png';
-import {
-  userDid,
-  queryRecords,
-  readRecord,
-  writeRecord,
-} from '../../../../util/web5';
-import { ChatProtocol } from '../../../../util/protocols/chat.protocol';
+import Fox from '@assets/sample-pictures/fox.png';
+import { userDid, queryRecords, readRecord, writeRecord } from '@util/web5';
+import { ChatProtocol } from '@util/protocols/chat.protocol';
 
 async function populateChats(contextId: string) {
   const { records } = await queryRecords({
@@ -37,7 +32,7 @@ async function populateChats(contextId: string) {
       });
     }
   }
-  console.log('pop chats');
+  // console.log('pop chats');
   return messages;
 }
 
@@ -76,7 +71,7 @@ function ChatDetail() {
         message: { recordId: chatId },
       });
       if (record) {
-        console.log(record);
+        // console.log(record);
       } else {
         setIsError(true);
       }

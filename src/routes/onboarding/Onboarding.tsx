@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
-import { RoutePaths } from '../../routes';
-import SpeechBubble from '../../assets/speech-bubble.png';
+import { RoutePaths } from '@/routes';
+import SpeechBubble from '@assets/speech-bubble.png';
 
 function Onboarding() {
   const navigate = useNavigate();

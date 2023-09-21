@@ -1,15 +1,15 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
-import Bat from '../../../assets/sample-pictures/bat.png';
-import Cow from '../../../assets/sample-pictures/cow.png';
-import Dolphin from '../../../assets/sample-pictures/dolphin.png';
-import Elephant from '../../../assets/sample-pictures/elephant.png';
-import Fox from '../../../assets/sample-pictures/fox.png';
-import Camera from '../../../assets/icons/camera.svg';
+import Bat from '@assets/sample-pictures/bat.png';
+import Cow from '@assets/sample-pictures/cow.png';
+import Dolphin from '@assets/sample-pictures/dolphin.png';
+import Elephant from '@assets/sample-pictures/elephant.png';
+import Fox from '@assets/sample-pictures/fox.png';
+import Camera from '@assets/icons/camera.svg';
 import { useNavigate } from 'react-router';
-import { RoutePaths } from '../../../routes';
-import { configureProtocol, userDid, writeRecord } from '../../../util/web5';
-import { ProfileProtocol } from '../../../util/protocols/profile.protocol';
-import { ChatProtocol } from '../../../util/protocols/chat.protocol';
+import { RoutePaths } from '@/routes';
+import { configureProtocol, userDid, writeRecord } from '@util/web5';
+import { ProfileProtocol } from '@util/protocols/profile.protocol';
+import { ChatProtocol } from '@util/protocols/chat.protocol';
 
 function Create() {
   const [profilePicture, setProfilePicture] = useState('');

@@ -1,16 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { ProfileProtocol } from '../../../../util/protocols/profile.protocol';
-import {
-  userDid,
-  queryRecords,
-  readRecord,
-  writeRecord,
-} from '../../../../util/web5';
-import Bat from '../../../../assets/sample-pictures/bat.png';
-import Elephant from '../../../../assets/sample-pictures/elephant.png';
-import Fox from '../../../../assets/sample-pictures/fox.png';
+import { ProfileProtocol } from '@util/protocols/profile.protocol';
+import { userDid, queryRecords, readRecord, writeRecord } from '@util/web5';
+import Bat from '@assets/sample-pictures/bat.png';
+import Elephant from '@assets/sample-pictures/elephant.png';
+import Fox from '@assets/sample-pictures/fox.png';
 import ChatLink from './ChatLink';
-import { ChatProtocol } from '../../../../util/protocols/chat.protocol';
+import { ChatProtocol } from '@util/protocols/chat.protocol';
 import { useNavigate } from 'react-router-dom';
 
 function Sidebar() {
@@ -59,7 +54,7 @@ function Sidebar() {
         navigate(String(duplicateRecordsTo[0].id));
         return;
       }
-      console.log('reached past the logic');
+      // console.log('reached past the logic');
       const { status, record } = await writeRecord({
         data: {
           recipients: [recipient, userDid],
@@ -99,9 +94,9 @@ function Sidebar() {
           profileRecord.dataFormat,
         )
       ) {
-        console.log(await profileRecord.data.blob());
+        // console.log(await profileRecord.data.blob());
       } else {
-        console.log(await profileRecord.data.json());
+        // console.log(await profileRecord.data.json());
       }
     }
   }
@@ -313,11 +308,11 @@ async function populateChats() {
       },
     },
   });
-  console.log(records);
+  // console.log(records);
   if (records) {
     for (const record of records) {
       const chatListItem = await record.data.json();
-      console.log(record, chatListItem);
+      // console.log(record, chatListItem);
       const participants = chatListItem.recipients.filter(
         (recipientDid: string) => recipientDid !== userDid,
       );
