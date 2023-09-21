@@ -143,6 +143,7 @@ async function createProfile() {
       protocol: ProfileProtocol.protocol,
       protocolPath: 'photo',
       schema: ProfileProtocol.types.photo.schema,
+      published: true,
     },
   });
 
@@ -155,6 +156,7 @@ async function createProfile() {
       protocol: ProfileProtocol.protocol,
       protocolPath: 'profile',
       schema: ProfileProtocol.types.profile.schema,
+      published: true,
     },
   });
   await photoRecord?.send(userDid);
