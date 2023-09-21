@@ -94,10 +94,11 @@ function ChatDetail() {
         schema: ChatProtocol.types.message.schema,
         contextId: chatId,
         parentId: chatId,
+        published: true, // so they can query it from you
       },
     });
     if (record) {
-      // console.log(record);
+      console.log(record);
       const { record: chatIdRecord } = await readRecord({
         message: {
           recordId: chatId,

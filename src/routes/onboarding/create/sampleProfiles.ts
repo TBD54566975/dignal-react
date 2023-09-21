@@ -1,10 +1,11 @@
+import { IProfile } from '@/routes/chat/types';
 import Bat from '@assets/sample-pictures/bat.png';
 import Cow from '@assets/sample-pictures/cow.png';
 import Dolphin from '@assets/sample-pictures/dolphin.png';
 import Elephant from '@assets/sample-pictures/elephant.png';
 import Fox from '@assets/sample-pictures/fox.png';
 
-const sampleDisplayProfiles = [
+const sampleDisplayProfiles: IProfile[] = [
   {
     name: 'Bella Bat',
     picture: await (await fetch(Bat)).blob(),

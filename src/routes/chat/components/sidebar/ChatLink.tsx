@@ -1,32 +1,28 @@
 import { NavLink } from 'react-router-dom';
 import { RoutePaths } from '@/routes';
-import { singleChat } from './Sidebar';
+import { IChat } from '@routes/chat/types';
 
-function ChatLink({ chat }: { chat: singleChat }) {
+function ChatLink({ chat }: { chat: IChat }) {
   return (
     <NavLink to={RoutePaths.CHAT + '/' + chat.id} end className="message-row">
       <div
-        className={`notification ${
-          !chat.what.seen ? 'notification-active' : ''
-        }`}
+        className={`notification ${!chat.seen ? 'notification-active' : ''}`}
       >
-        <span className="sr-only" aria-live="assertive">
-          {chat.what.seen ? 'Read' : 'Unread'}
-        </span>
+        <span className="sr-only">{chat.seen ? '' : 'Unread'}</span>
       </div>
-      <div className="avatar">
-        <img src={chat.who.picture} alt="" />
+      <div className="avatar-container">
+        <div className="avatar">
+          <img src={chat.picture} alt="" />
+        </div>
       </div>
       <div className="contents">
         <div className="message">
-          <h2>{chat.who.name}</h2>
-          <p>{chat.what.message}</p>
+          <h2>{chat.name}</h2>
+          <p>{chat.message}</p>
         </div>
         <div className="meta">
-          <p className={!chat.what.seen ? 'text-highlight' : ''}>
-            {chat.what.timestamp}
-          </p>
-          {chat.what.from === 'self' && <p className="text-xxs">Sent</p>}
+          <p className={!chat.seen ? 'text-highlight' : ''}>{chat.timestamp}</p>
+          {chat.isAuthor && <p className="text-xxs">Sent</p>}
         </div>
       </div>
     </NavLink>

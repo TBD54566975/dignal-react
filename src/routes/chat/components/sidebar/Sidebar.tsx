@@ -1,203 +1,60 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ProfileProtocol } from '@util/protocols/profile.protocol';
 import { userDid, queryRecords, readRecord, writeRecord } from '@util/web5';
-import Bat from '@assets/sample-pictures/bat.png';
-import Elephant from '@assets/sample-pictures/elephant.png';
 import Fox from '@assets/sample-pictures/fox.png';
 import ChatLink from './ChatLink';
 import { ChatProtocol } from '@util/protocols/chat.protocol';
 import { useNavigate } from 'react-router-dom';
+import {
+  convertTime,
+  copyToClipboard,
+  getProfilePictureSrc,
+} from '@/util/helpers';
+import { IChat, IProfile, IProfileRecord } from '@routes/chat/types';
 
 function Sidebar() {
-  const [profile, setProfile] = useState<{ name: string; imgSrc: string }>();
-  const navigate = useNavigate();
-
-  const recipientDidRef = useRef<HTMLInputElement>(null);
-
-  async function startChat() {
-    if (recipientDidRef?.current?.value) {
-      // In single chat case, if group chat, query, consume, and filter instead
-      const recipient = recipientDidRef.current.value;
-      const { records: duplicateRecordsFrom } = await queryRecords({
-        from: recipient,
-        message: {
-          filter: {
-            protocol: ChatProtocol.protocol,
-            protocolPath: 'message',
-          },
-        },
-      });
-      if (duplicateRecordsFrom && duplicateRecordsFrom.length > 0) {
-        if (duplicateRecordsFrom.length > 1) {
-          console.warn(
-            'More than 1 existing record found for protocolPath `message`',
-          );
-        }
-        navigate(String(duplicateRecordsFrom[0].id));
-        return;
-      }
-      const { records: duplicateRecordsTo } = await queryRecords({
-        message: {
-          filter: {
-            protocol: ChatProtocol.protocol,
-            protocolPath: 'message',
-            recipient,
-          },
-        },
-      });
-      if (duplicateRecordsTo && duplicateRecordsTo.length > 0) {
-        if (duplicateRecordsTo.length > 1) {
-          console.warn(
-            'More than 1 existing record found for protocolPath `message`',
-          );
-        }
-        navigate(String(duplicateRecordsTo[0].id));
-        return;
-      }
-      // console.log('reached past the logic');
-      const { status, record } = await writeRecord({
-        data: {
-          recipients: [recipient, userDid],
-        },
-        message: {
-          protocol: ChatProtocol.protocol,
-          protocolPath: 'message',
-          schema: ChatProtocol.types.message.schema,
-          recipient: userDid,
-        },
-      });
-      console.log(status, record);
-      if (record && recipientDidRef && recipientDidRef.current) {
-        const { status: sendStatus } = await record.send(
-          recipientDidRef.current.value,
-        );
-        console.log(sendStatus);
-      }
-      navigate(String(record?.id));
-    }
-  }
-
-  async function getFriendProfile() {
-    const { records: profileRecords, status: profileStatus } =
-      await queryRecords({
-        from: recipientDidRef?.current?.value,
-        message: {
-          filter: {
-            protocol: ProfileProtocol.protocol,
-          },
-        },
-      });
-    console.log(profileStatus, profileRecords);
-    for (const profileRecord of profileRecords!) {
-      if (
-        ProfileProtocol.types.photo.dataFormats.includes(
-          profileRecord.dataFormat,
-        )
-      ) {
-        // console.log(await profileRecord.data.blob());
-      } else {
-        // console.log(await profileRecord.data.json());
-      }
-    }
-  }
-
-  async function getFriendChat() {
-    const { records: chatRecords, status: chatStatus } = await queryRecords({
-      from: recipientDidRef?.current?.value,
-      message: {
-        filter: {
-          protocol: ChatProtocol.protocol,
-        },
-      },
-    });
-    console.log(chatStatus, chatRecords);
-    for (const chatRecord of chatRecords!) {
-      console.log(await chatRecord.data.json());
-    }
-  }
+  const [profile, setProfile] = useState<IProfile>();
+  const [chatList, setChatList] = useState<IChat[]>([]);
 
   useEffect(() => {
     async function getProfile() {
-      const { records } = await queryRecords({
-        message: {
-          filter: {
-            protocol: ProfileProtocol.protocol,
-            protocolPath: 'profile',
-            schema: ProfileProtocol.types.profile.schema,
-            dataFormat: ProfileProtocol.types.profile.dataFormats[0],
-          },
-        },
-      });
-      if (records) {
-        const profiledata = await records[records.length - 1].data.json();
-
-        const { record: photodata } = await readRecord({
-          message: {
-            recordId: profiledata.picture,
-          },
-        });
-        const blob = await photodata.data.blob();
-        setProfile({
-          name: profiledata.name,
-          imgSrc: URL.createObjectURL(blob),
-        });
+      const profile = await transformUserProfile(await getUserProfile());
+      if (profile) {
+        setProfile(profile);
       }
     }
     void getProfile();
   }, []);
 
-  const [chats, setChats] = useState<singleChat[]>([]);
-
   useEffect(() => {
-    async function setInitialChats() {
+    // We populate our list at first render
+    async function getLatestChats() {
       const dwnChats = await populateChats();
-      setChats(dwnChats);
+      setChatList(dwnChats);
     }
-    void setInitialChats();
-  }, []);
-
-  useEffect(() => {
+    void getLatestChats();
+    // Every 5s, we check for new chats
     const intervalId = setInterval(async () => {
-      const dwnChats = await populateChats();
-      setChats(dwnChats);
+      getLatestChats();
     }, 5000);
     return () => clearInterval(intervalId);
-  }, []);
-
-  function copyDid() {
-    navigator.clipboard.writeText(userDid);
-  }
+  }, [chatList.length]);
 
   return (
     <div>
-      <div className="profile-row">
-        <button onClick={copyDid}>Copy my DID</button>
-      </div>
-      <div className="profile-row">
-        <label htmlFor="recipientDid" className="sr-only">
-          To:{' '}
-        </label>
-        <input
-          autoComplete="off"
-          id="recipientDid"
-          type="text"
-          ref={recipientDidRef}
-          placeholder="To:"
-        />
-        <button onClick={startChat}>+ New Chat</button>
-      </div>
-      <div className="profile-row">
-        <button onClick={getFriendProfile}>Get profile</button>
-        <button onClick={getFriendChat}>Get chat</button>
-      </div>
-      <div className="profile-row">
-        <div className="avatar">
-          <img src={profile?.imgSrc} alt="" />
+      <StartChatSection />
+      {profile && (
+        <div className="profile-row">
+          <div className="avatar-container">
+            <div className="avatar">
+              <img src={getProfilePictureSrc(profile.picture)} alt="" />
+            </div>
+          </div>
+          <h1>{profile.name}</h1>
         </div>
-        <h1>{profile?.name}</h1>
-      </div>
+      )}
       <ul className="messages">
-        {chats.map((chat, index) => {
+        {chatList.map((chat, index) => {
           return (
             <li key={index}>
               <ChatLink chat={chat} />
@@ -211,89 +68,53 @@ function Sidebar() {
 
 export default Sidebar;
 
-const mockChats = [
-  {
-    who: {
-      name: 'Dignal Welcome Chat',
-      picture: Fox,
-    },
-    what: {
-      message: 'Last message outbound',
-      timestamp: '2023-08-09T01:13:54.402Z',
-      from: 'self',
-      delivered: true,
-      seen: true,
-    },
-    id: '123', //recordId of the thread
-  },
-  {
-    who: {
-      name: 'Rando friend',
-      picture: Elephant,
-    },
-    what: {
-      message: 'Last message inbound continues onto second line',
-      timestamp: '2023-08-07T01:13:54.402Z',
-      from: 'friend',
-      delivered: true,
-      seen: true,
-    },
-    id: '456',
-  },
-  {
-    who: {
-      name: 'Other rando friend',
-      picture: Bat,
-    },
-    what: {
-      message: 'Last message inbound continues onto second line and is unread',
-      timestamp: '2023-08-07T01:13:54.402Z',
-      from: 'friend',
-      delivered: true,
-      seen: false,
-    },
-    id: '789',
-  },
-];
+function StartChatSection() {
+  const [recipientDid, setRecipientDid] = useState('');
+  const navigate = useNavigate();
 
-export type singleChat = (typeof mockChats)[0];
-
-for (const chat of mockChats) {
-  chat.what.timestamp = convertTime(chat.what.timestamp);
-}
-
-function convertTime(time: string) {
-  const now = new Date();
-  const inputTime = new Date(time);
-  const timeDifference = now.getTime() - inputTime.getTime();
-  const oneDay = 24 * 60 * 60 * 1000;
-  const oneWeek = 7 * oneDay;
-
-  if (timeDifference < oneDay && inputTime.getDate() === now.getDate()) {
-    const formattedTime = `${inputTime.getHours()}:${String(
-      inputTime.getMinutes(),
-    ).padStart(2, '0')}`;
-    const period = inputTime.getHours() >= 12 ? 'pm' : 'am';
-    return `${formattedTime} ${period}`;
-  } else if (timeDifference < 2 * oneDay) {
-    return 'Yesterday';
-  } else if (timeDifference < oneWeek) {
-    const daysOfWeek = [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-    ];
-    return daysOfWeek[inputTime.getDay()];
-  } else {
-    const formattedDate = `${inputTime.getFullYear()}-${String(
-      inputTime.getMonth() + 1,
-    ).padStart(2, '0')}-${String(inputTime.getDate()).padStart(2, '0')}`;
-    return formattedDate;
+  async function startNewChat() {
+    if (recipientDid) {
+      const route = await startChat(recipientDid);
+      route && navigate(String(route));
+    }
   }
+
+  return (
+    <>
+      <div className="profile-row">
+        <button onClick={() => copyToClipboard(userDid)}>Copy my DID</button>
+      </div>
+      <div className="profile-row">
+        <label htmlFor="recipientDid" className="sr-only">
+          To:{' '}
+        </label>
+        <input
+          autoComplete="off"
+          id="recipientDid"
+          type="text"
+          onChange={e => setRecipientDid(e.currentTarget.value)}
+          placeholder="To:"
+        />
+        <button disabled={!recipientDid} onClick={startNewChat}>
+          + New Chat
+        </button>
+      </div>
+      <div className="profile-row">
+        <button
+          disabled={!recipientDid}
+          onClick={() => getParticipantProfile(recipientDid)}
+        >
+          Get profile
+        </button>
+        <button
+          disabled={!recipientDid}
+          onClick={() => getFriendChat(recipientDid)}
+        >
+          Get chat
+        </button>
+      </div>
+    </>
+  );
 }
 
 async function populateChats() {
@@ -308,34 +129,180 @@ async function populateChats() {
       },
     },
   });
-  // console.log(records);
   if (records) {
     for (const record of records) {
-      const chatListItem = await record.data.json();
-      // console.log(record, chatListItem);
-      const participants = chatListItem.recipients.filter(
+      let participant;
+      const chatItem = await record.data.json();
+      const participants = chatItem.recipients.filter(
         (recipientDid: string) => recipientDid !== userDid,
       );
+      const profile = await getParticipantProfile(participants[0]);
+      if (profile) {
+        // transform the participant element into { did: did:ion:1234, name: "Alice", picture: blob }
+        participant = {
+          did: participants[0],
+          name: profile.name,
+          picture: URL.createObjectURL(profile.picture),
+        };
+      }
       const dwnChat = {
-        who: {
-          name:
-            participants.length > 1 ? 'Group' : participants[0].slice(0, 24), //arbitrary slice
-          picture: Fox,
-        },
-        what: {
-          message: 'Message',
-          timestamp: convertTime(record.dateModified),
-          from:
-            chatListItem[chatListItem.length - 1] === userDid
-              ? 'self'
-              : 'friend',
-          delivered: true,
-          seen: true,
-        },
+        name:
+          participants.length > 1
+            ? 'Group'
+            : participant?.name || participants[0].slice(0, 24), //arbitrary slice
+        picture: participants.length > 1 ? Fox : participant?.picture || Fox,
+        message: 'Message',
+        timestamp: convertTime(record.dateModified),
+        isAuthor: chatItem[chatItem.length - 1] === userDid, // Since we create a chat by adding initiating DID as last item
+        delivered: true,
+        seen: true,
         id: record.id,
       };
       dwnChats.push(dwnChat);
     }
   }
   return dwnChats;
+}
+
+async function startChat(recipient: string) {
+  // Check if chat exists already in DWN, where recipient initiated
+  const { records: duplicateRecordsFrom } = await queryRecords({
+    from: recipient,
+    message: {
+      filter: {
+        protocol: ChatProtocol.protocol,
+        protocolPath: 'message',
+      },
+    },
+  });
+  if (duplicateRecordsFrom && duplicateRecordsFrom.length > 0) {
+    if (duplicateRecordsFrom.length > 1) {
+      console.warn('More than 1 record found for protocolPath `message`');
+    }
+    return duplicateRecordsFrom[0].id;
+  }
+  // Else check if chat exists already, where user had initiated chat
+  const { records: duplicateRecordsTo } = await queryRecords({
+    message: {
+      filter: {
+        protocol: ChatProtocol.protocol,
+        protocolPath: 'message',
+        recipient,
+      },
+    },
+  });
+  if (duplicateRecordsTo && duplicateRecordsTo.length > 0) {
+    if (duplicateRecordsTo.length > 1) {
+      console.warn('More than 1 record found for protocolPath `message`');
+    }
+    return duplicateRecordsTo[0].id;
+  }
+  // Else write a new record to start the chat
+  const { record } = await writeRecord({
+    data: {
+      recipients: [recipient, userDid],
+    },
+    message: {
+      protocol: ChatProtocol.protocol,
+      protocolPath: 'message',
+      schema: ChatProtocol.types.message.schema,
+      recipient: userDid,
+    },
+  });
+  if (record) {
+    const { status: sendStatus } = await record.send(recipient);
+    console.log(sendStatus);
+  }
+  return record?.id;
+}
+
+async function getParticipantProfile(participant: string) {
+  const { records: profileRecords } = await queryRecords({
+    from: participant,
+    message: {
+      filter: {
+        protocol: ProfileProtocol.protocol,
+        protocolPath: 'profile',
+      },
+    },
+  });
+  if (profileRecords) {
+    const profileData = await profileRecords[0].data.json();
+    const { record: photoRecord } = await readRecord({
+      from: participant,
+      message: {
+        recordId: profileData.picture,
+      },
+    });
+    const photoData = await photoRecord.data.blob();
+    return { name: profileData.name, picture: photoData };
+  }
+}
+
+async function getFriendChat(recipient: string) {
+  const { records: chatRecords, status: chatStatus } = await queryRecords({
+    from: recipient,
+    message: {
+      filter: {
+        protocol: ChatProtocol.protocol,
+      },
+    },
+  });
+  console.log(chatStatus, chatRecords);
+  for (const chatRecord of chatRecords!) {
+    console.log(await chatRecord.data.json());
+  }
+}
+
+async function getLatestProfileRecord() {
+  const { records } = await queryRecords({
+    message: {
+      filter: {
+        protocol: ProfileProtocol.protocol,
+        protocolPath: 'profile',
+        schema: ProfileProtocol.types.profile.schema,
+        dataFormat: ProfileProtocol.types.profile.dataFormats[0],
+      },
+    },
+  });
+  if (records) {
+    console.log(records);
+    return records[records.length - 1];
+  }
+}
+
+async function getProfilePictureRecord(photoRecordId: string) {
+  const { record: photoData } = await readRecord({
+    message: {
+      recordId: photoRecordId,
+    },
+  });
+  console.log(photoData);
+  return photoData;
+}
+
+async function getUserProfile() {
+  const latestProfileRecord = await getLatestProfileRecord();
+  if (latestProfileRecord) {
+    const profileData = await latestProfileRecord.data.json();
+    return profileData;
+  }
+}
+
+async function getUserPicture(profileData: IProfileRecord) {
+  const photoData = await getProfilePictureRecord(profileData.picture);
+  if (photoData) {
+    const blob = await photoData.data.blob();
+    return blob;
+  }
+}
+
+async function transformUserProfile(profileData: IProfileRecord) {
+  const blob = await getUserPicture(profileData);
+  if (blob) {
+    return {
+      name: profileData.name,
+      picture: blob,
+    };
+  }
 }
