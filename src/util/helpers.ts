@@ -18,3 +18,45 @@ export async function resetIndexedDb() {
   }
   console.log('Cleared databases');
 }
+
+export function convertTime(time: string) {
+  const now = new Date();
+  const inputTime = new Date(time);
+  const timeDifference = now.getTime() - inputTime.getTime();
+  const oneDay = 24 * 60 * 60 * 1000;
+  const oneWeek = 7 * oneDay;
+
+  if (timeDifference < oneDay && inputTime.getDate() === now.getDate()) {
+    const formattedTime = `${inputTime.getHours()}:${String(
+      inputTime.getMinutes(),
+    ).padStart(2, '0')}`;
+    const period = inputTime.getHours() >= 12 ? 'pm' : 'am';
+    return `${formattedTime} ${period}`;
+  } else if (timeDifference < 2 * oneDay) {
+    return 'Yesterday';
+  } else if (timeDifference < oneWeek) {
+    const daysOfWeek = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ];
+    return daysOfWeek[inputTime.getDay()];
+  } else {
+    const formattedDate = `${inputTime.getFullYear()}-${String(
+      inputTime.getMonth() + 1,
+    ).padStart(2, '0')}-${String(inputTime.getDate()).padStart(2, '0')}`;
+    return formattedDate;
+  }
+}
+
+export function getProfilePictureSrc(blob: Blob) {
+  return blob && URL.createObjectURL(blob);
+}
+
+export function copyToClipboard(text: string) {
+  navigator.clipboard.writeText(text);
+}
