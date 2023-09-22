@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router';
 import { connectWeb5, getWeb5Route } from '@/util/web5';
-import { RoutePaths } from '@/routes';
 import { setInitialTheme, updateLocalTheme } from '@routes/theme';
 import { resetIndexedDb } from '@util/helpers';
 
@@ -45,7 +44,6 @@ function LoadingSpinner() {
 
 function Header() {
   const [themeOptions, setThemeOptions] = useState(setInitialTheme());
-  const navigate = useNavigate();
 
   function updateTheme() {
     const theme = updateLocalTheme();
@@ -54,7 +52,6 @@ function Header() {
 
   async function resetDb() {
     await resetIndexedDb();
-    navigate(RoutePaths.ONBOARDING);
   }
 
   return (

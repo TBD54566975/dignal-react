@@ -16,7 +16,7 @@ export async function resetIndexedDb() {
       indexedDB.deleteDatabase(database.name);
     }
   }
-  console.log('Cleared databases');
+  location.reload();
 }
 
 export function convertTime(time: string) {
