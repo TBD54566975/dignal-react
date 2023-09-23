@@ -6,7 +6,7 @@ import { configureProtocol, userDid, writeRecord } from '@util/web5';
 import { ProfileProtocol } from '@util/protocols/profile.protocol';
 import { ChatProtocol } from '@util/protocols/chat.protocol';
 import { sampleProfile } from './sampleProfiles';
-import { getProfilePictureSrc } from '@/util/helpers';
+import { convertBlobToUrl } from '@/util/helpers';
 
 function Create() {
   return (
@@ -39,7 +39,15 @@ function ProfilePicture() {
     profilePictureInputRef?.current?.click();
   }
 
+  const [uploadError, setUploadError] = useState('');
+
   function setAndPreviewProfilePicture(e: ChangeEvent<HTMLInputElement>) {
+    if (e.currentTarget.files && e.currentTarget.files[0].size > 1000) {
+      setUploadError(
+        'Image size is too large. Please select one that is > 1MB',
+      );
+      return;
+    }
     const preview = getPreviewProfilePicture(e);
     if (preview) {
       profilePicture = preview;
@@ -58,13 +66,14 @@ function ProfilePicture() {
       >
         <img
           id="profilePicturePreview"
-          src={getProfilePictureSrc(previewPhoto)}
+          src={convertBlobToUrl(previewPhoto)}
           alt=""
         />
         <div className="profile-picture-icon">
           <img src={Camera} alt="" />
         </div>
       </button>
+      {uploadError && <p>{uploadError}</p>}
       <input
         ref={profilePictureInputRef}
         className="sr-only"
@@ -72,7 +81,7 @@ function ProfilePicture() {
         name="profilePicture"
         onChange={setAndPreviewProfilePicture}
         type="file"
-        accept="image/png"
+        accept="image/png, image/jpeg"
         aria-hidden
         tabIndex={-1}
       />

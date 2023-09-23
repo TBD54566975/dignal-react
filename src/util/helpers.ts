@@ -53,7 +53,7 @@ export function convertTime(time: string) {
   }
 }
 
-export function getProfilePictureSrc(blob: Blob) {
+export function convertBlobToUrl(blob: Blob) {
   return blob && URL.createObjectURL(blob);
 }
 
