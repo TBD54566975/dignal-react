@@ -12,7 +12,7 @@ import {
   type ProtocolsQueryResponse,
   type ProtocolsConfigureResponse,
   type ProtocolsConfigureRequest,
-} from '@web5/api';
+} from '@web5/api/browser';
 import { ChatProtocol } from './protocols/chat.protocol';
 import { RoutePaths } from '../routes';
 
@@ -21,7 +21,7 @@ export let userDid: string;
 
 export async function connectWeb5() {
   const web5Connect = await Web5.connect({
-    sync: '2s',
+    sync: '5s',
   });
   [web5, userDid] = [web5Connect.web5, web5Connect.did];
   return web5Connect;
