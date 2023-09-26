@@ -47,6 +47,7 @@
     saturate(7480%) hue-rotate(1deg) brightness(105%) contrast(108%);
   --color-base-filter: invert(10%);
   --color-base-tint-filter: invert(0%);
+  --color-base-invert-filter: invert(100%);
 
   /* Box Shadow */
   --box-shadow: 0 0 16px rgba(220, 220, 220, 0.25);
@@ -73,6 +74,7 @@
     saturate(7480%) hue-rotate(5deg) brightness(205%) contrast(78%);
   --color-base-filter: invert(70%);
   --color-base-tint-filter: invert(100%);
+  --color-base-invert-filter: invert(10%);
 
   /* Box Shadow */
   --box-shadow: 0 0 16px rgba(220, 220, 220, 0.01);

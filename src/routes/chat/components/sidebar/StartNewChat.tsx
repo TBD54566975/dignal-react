@@ -12,7 +12,7 @@ function StartNewChat() {
   }
 
   return (
-    <button onClick={startNewChat}>
+    <button className="icon-button-primary" onClick={startNewChat}>
       <img width="16" src={Plus} alt="" /> New Chat
     </button>
   );

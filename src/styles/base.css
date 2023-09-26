@@ -35,6 +35,10 @@ button:disabled {
   opacity: 0.1;
 }
 
+.icon-button-primary > img {
+  filter: var(--color-base-invert-filter);
+}
+
 input,
 textarea,
 select,
