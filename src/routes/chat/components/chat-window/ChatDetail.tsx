@@ -4,6 +4,7 @@ import { userDid, queryRecords, readRecord } from '@util/web5';
 import { ChatProtocol } from '@util/protocols/chat.protocol';
 import { getChatProfile, writeMessageToDwn } from '../../utils';
 import { IChatMessage, IProfileRecord } from '../../types';
+import { convertTime } from '../../../../util/helpers';
 import { Record } from '@web5/api';
 import { RoutePaths } from '@/routes';
 
@@ -120,11 +121,11 @@ function ChatDetail() {
               <img src={currentChatProfile?.picture} alt="" />
             </div>
             <div className="chat-name">
-              <h2>{currentChatProfile?.name}</h2>
+              <h1>{currentChatProfile?.name}</h1>
             </div>
           </div>
           <div className="history-window visually-hide-scrollbar">
-            <div className="chat-window">
+            <div className="chat-window-inner">
               {currentMessages.map((chat, index) => {
                 return (
                   <p
@@ -184,7 +185,7 @@ async function populateMessages(contextId: string) {
       const data = await record.data.json();
       messages.push({
         message: data.text,
-        timestamp: record.dateModified,
+        timestamp: convertTime(record.dateModified),
         //TODO: change to `record.author`
         isAuthor: userDid === data.author,
         delivered: true,

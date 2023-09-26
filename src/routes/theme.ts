@@ -25,3 +25,10 @@ export function updateLocalTheme() {
   localStorage.setItem('themePreference', currentTheme);
   return { currentTheme, altTheme };
 }
+
+export function getLocalTheme() {
+  const isDark = document.body.classList.contains(ThemeOptions.DARK);
+  const currentTheme = isDark ? ThemeOptions.DARK : ThemeOptions.LIGHT;
+  const altTheme = isDark ? ThemeOptions.LIGHT : ThemeOptions.DARK;
+  return { currentTheme, altTheme };
+}

@@ -5,14 +5,24 @@ import SingleUser from '@assets/sample-pictures/single-user.svg';
 import GroupUser from '@assets/sample-pictures/group-user.svg';
 import ChatLink from './ChatLink';
 import { ChatProtocol } from '@util/protocols/chat.protocol';
-import { convertTime, convertBlobToUrl, copyToClipboard } from '@/util/helpers';
-import { IChat, IProfile, IProfileRecord } from '@routes/chat/types';
-import { getParticipantProfile } from '../../utils';
+import {
+  convertBlobToUrl,
+  copyToClipboard,
+  resetIndexedDb,
+} from '@/util/helpers';
+import { IChatRecord, IProfile, IProfileRecord } from '@routes/chat/types';
+import { getParticipantProfile, hideSidebar } from '../../utils';
 import StartNewChat from './StartNewChat';
 import { Record } from '@web5/api';
+import { getLocalTheme, updateLocalTheme } from '@/routes/theme';
+import Close from '@assets/icons/x-close.svg';
+import Copy from '@assets/icons/copy.svg';
+import Sun from '@assets/icons/sun.svg';
+import Moon from '@assets/icons/moon.svg';
+import Trash from '@assets/icons/trash.svg';
 
 function Sidebar() {
-  const [chatList, setChatList] = useState<IChat[]>([]);
+  const [chatList, setChatList] = useState<IChatRecord[]>([]);
 
   useEffect(() => {
     // We populate our list at first render
@@ -30,30 +40,63 @@ function Sidebar() {
   }, [chatList.length]);
 
   return (
-    <div>
-      <StartNewChat />
-      <ProfileRow />
-      <CopyDidButton />
-      <ul className="messages">
-        {chatList.map((chat, index) => {
-          return (
-            <li key={index}>
-              <ChatLink chat={chat} />
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+    <>
+      <div className="sidebar-inner">
+        <StartNewChat />
+        <ul className="messages">
+          {chatList.map((chat, index) => {
+            return (
+              <li key={index} className="message-item">
+                <ChatLink chat={chat} />
+              </li>
+            );
+          })}
+        </ul>
+        <ProfileRow />
+        <Footer />
+      </div>
+      <div className="mobile-only mobile-sidebar-backdrop">
+        <button
+          title="Close"
+          className="icon-button icon-button-border"
+          onClick={hideSidebar}
+        >
+          <img width="16" src={Close} alt="" />
+        </button>
+      </div>
+    </>
   );
 }
 
 export default Sidebar;
 
-function CopyDidButton() {
+function Footer() {
+  const [themeOptions, setThemeOptions] = useState(getLocalTheme());
+
+  function updateTheme() {
+    const theme = updateLocalTheme();
+    setThemeOptions(theme);
+  }
+
   return (
-    <div className="profile-row">
-      <button onClick={() => copyToClipboard(userDid)}>Copy my DID</button>
-    </div>
+    <>
+      <div className="profile-row">
+        <button className="icon-button" onClick={updateTheme}>
+          <img
+            width="16"
+            src={themeOptions.altTheme === 'light' ? Sun : Moon}
+            alt=""
+          />
+          Turn on {themeOptions.altTheme} mode
+        </button>
+      </div>
+      <div className="profile-row">
+        <button className="icon-button danger-button" onClick={resetIndexedDb}>
+          <img width="16" src={Trash} alt="" />
+          Destroy connection
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -77,7 +120,14 @@ function ProfileRow() {
               <img src={convertBlobToUrl(profile.picture)} alt="" />
             </div>
           </div>
-          <h1>{profile.name}</h1>
+          <p>{profile.name}</p>
+          <button
+            className="icon-button m-l-auto nowrap"
+            onClick={() => copyToClipboard(userDid)}
+          >
+            <img width="16" src={Copy} alt="" />
+            Copy my DID
+          </button>
         </div>
       )}
     </>
@@ -136,12 +186,7 @@ async function transformDwnChatRecord(record: Record) {
     picture:
       participants.length > 1 ? GroupUser : participantsProfiles[0].picture,
     // TODO : once subs come in populate with latest message
-    message: 'Preview hidden',
-    timestamp: convertTime(record.dateModified),
-    isAuthor: false,
-    delivered: true,
-    seen: true,
-    id: record.id,
+    record,
   };
 }
 

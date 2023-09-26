@@ -72,3 +72,13 @@ export async function writeMessageToDwn(
     }
   }
 }
+
+export function showSidebar() {
+  document.querySelector('.sidebar')?.classList.add('sidebar-expanded');
+  document.querySelector('.sidebar')?.classList.remove('sidebar-retracted');
+}
+
+export function hideSidebar() {
+  document.querySelector('.sidebar')?.classList.remove('sidebar-expanded');
+  document.querySelector('.sidebar')?.classList.add('sidebar-retracted');
+}

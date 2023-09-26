@@ -1,16 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router';
 import { connectWeb5, getWeb5Route } from '@/util/web5';
-import { setInitialTheme, updateLocalTheme } from '@routes/theme';
-import { resetIndexedDb } from '@util/helpers';
+import { setInitialTheme } from './theme';
+
+setInitialTheme();
 
 function App() {
-  return (
-    <div className="site-container">
-      <Header />
-      <LoadingHandler />
-    </div>
-  );
+  return <LoadingHandler />;
 }
 
 export default App;
@@ -38,28 +34,6 @@ function LoadingSpinner() {
       <div className="row text-center justify-center m-auto row-px">
         loading...
       </div>
-    </div>
-  );
-}
-
-function Header() {
-  const [themeOptions, setThemeOptions] = useState(setInitialTheme());
-
-  function updateTheme() {
-    const theme = updateLocalTheme();
-    setThemeOptions(theme);
-  }
-
-  async function resetDb() {
-    await resetIndexedDb();
-  }
-
-  return (
-    <div className="button-row">
-      <button onClick={updateTheme}>
-        Switch to {themeOptions.altTheme} theme
-      </button>
-      <button onClick={resetDb}>Reset datastore</button>
     </div>
   );
 }
