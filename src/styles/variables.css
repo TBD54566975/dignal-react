@@ -26,6 +26,7 @@
 
   /* Borders */
   --border-radius-sm: 0.25rem;
+  --border-radius-md: 1rem;
   --border-radius-lg: 999999px;
 
   /* Spacing */
@@ -34,13 +35,18 @@
   --sp-sm: 1rem; /* 16px */
   --sp-md: 1.25rem; /* 20px */
   --sp-lg: 1.5rem; /* 24px */
+  --sp-xl: 2rem; /* 32px */
 
   /* Layout */
   --layout-max-width: 480px;
 
   /* Filter */
   --color-primary-filter: brightness(0) saturate(100%) invert(11%) sepia(86%)
-    saturate(7478%) hue-rotate(271deg) brightness(88%) contrast(121%);
+    saturate(7478%) hue-rotate(271deg) brightness(88%) contrast(151%);
+  --color-danger-filter: brightness(0) saturate(100%) invert(8%) sepia(95%)
+    saturate(7480%) hue-rotate(1deg) brightness(105%) contrast(108%);
+  --color-base-filter: invert(10%);
+  --color-base-tint-filter: invert(0%);
 
   /* Box Shadow */
   --box-shadow: 0 0 16px rgba(220, 220, 220, 0.25);
@@ -59,8 +65,14 @@
   --color-input-background-tint: #252525;
   --color-input-placeholder: #787878;
   --color-danger: #ea3b3b;
+
+  /* Filter */
   --color-primary-filter: brightness(0) saturate(100%) invert(82%) sepia(59%)
-    saturate(1941%) hue-rotate(360deg) brightness(102%) contrast(106%);
+    saturate(450%) hue-rotate(360deg) brightness(92%) contrast(106%);
+  --color-danger-filter: brightness(0) saturate(100%) invert(5%) sepia(85%)
+    saturate(7480%) hue-rotate(5deg) brightness(205%) contrast(78%);
+  --color-base-filter: invert(70%);
+  --color-base-tint-filter: invert(100%);
 
   /* Box Shadow */
   --box-shadow: 0 0 16px rgba(220, 220, 220, 0.01);
