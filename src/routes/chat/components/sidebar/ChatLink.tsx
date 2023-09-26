@@ -5,6 +5,7 @@ import Close from '@assets/icons/x-close.svg';
 import { queryRecords } from '@/util/web5';
 import { ChatProtocol } from '@/util/protocols/chat.protocol';
 import { MouseEvent } from 'react';
+import { hideSidebar } from '../../utils';
 
 function ChatLink({ chat }: { chat: IChatRecord }) {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ function ChatLink({ chat }: { chat: IChatRecord }) {
     <>
       <NavLink
         to={RoutePaths.CHAT + '/' + chat.record.id}
+        onClick={hideSidebar}
         end
         className="message-row"
       >
