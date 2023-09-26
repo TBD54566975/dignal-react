@@ -15,13 +15,37 @@ import { getParticipantProfile, hideSidebar } from '../../utils';
 import StartNewChat from './StartNewChat';
 import { Record } from '@web5/api';
 import { getLocalTheme, updateLocalTheme } from '@/routes/theme';
-import Close from '@assets/icons/x-close.svg';
 import Copy from '@assets/icons/copy.svg';
 import Sun from '@assets/icons/sun.svg';
 import Moon from '@assets/icons/moon.svg';
 import Trash from '@assets/icons/trash.svg';
+import Close from '@assets/icons/x-close.svg';
 
 function Sidebar() {
+  return (
+    <div className="sidebar" onClick={hideSidebar}>
+      <div className="sidebar-inner" onClick={e => e.stopPropagation()}>
+        <ChatHeader />
+        <ChatList />
+        <Profile />
+        <ChatFooter />
+      </div>
+    </div>
+  );
+}
+
+export default Sidebar;
+
+function ChatHeader() {
+  return (
+    <div className="profile-row">
+      <StartNewChat />
+      <HideSidebarButton />
+    </div>
+  );
+}
+
+function ChatList() {
   const [chatList, setChatList] = useState<IChatRecord[]>([]);
 
   useEffect(() => {
@@ -38,39 +62,32 @@ function Sidebar() {
     }, 5000);
     return () => clearInterval(intervalId);
   }, [chatList.length]);
-
   return (
-    <>
-      <div className="sidebar-inner">
-        <StartNewChat />
-        <ul className="messages">
-          {chatList.map((chat, index) => {
-            return (
-              <li key={index} className="message-item">
-                <ChatLink chat={chat} />
-              </li>
-            );
-          })}
-        </ul>
-        <ProfileRow />
-        <Footer />
-      </div>
-      <div className="mobile-only mobile-sidebar-backdrop">
-        <button
-          title="Close"
-          className="icon-button icon-button-border"
-          onClick={hideSidebar}
-        >
-          <img width="16" src={Close} alt="" />
-        </button>
-      </div>
-    </>
+    <ul className="messages">
+      {chatList.map((chat, index) => {
+        return (
+          <li key={index} className="message-item">
+            <ChatLink chat={chat} />
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
-export default Sidebar;
+function HideSidebarButton() {
+  return (
+    <button
+      title="Close"
+      className="icon-button icon-button-border mobile-only"
+      onClick={hideSidebar}
+    >
+      <img width="16" src={Close} alt="" />
+    </button>
+  );
+}
 
-function Footer() {
+function ChatFooter() {
   const [themeOptions, setThemeOptions] = useState(getLocalTheme());
 
   function updateTheme() {
@@ -100,7 +117,7 @@ function Footer() {
   );
 }
 
-function ProfileRow() {
+function Profile() {
   const [profile, setProfile] = useState<IProfile>();
   useEffect(() => {
     async function getProfile() {
@@ -126,7 +143,7 @@ function ProfileRow() {
             onClick={() => copyToClipboard(userDid)}
           >
             <img width="16" src={Copy} alt="" />
-            Copy my DID
+            Copy DID
           </button>
         </div>
       )}

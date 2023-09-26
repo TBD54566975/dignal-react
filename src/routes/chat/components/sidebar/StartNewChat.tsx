@@ -12,13 +12,9 @@ function StartNewChat() {
   }
 
   return (
-    <>
-      <div className="profile-row">
-        <button onClick={startNewChat}>
-          <img width="16" src={Plus} alt="" /> New Chat
-        </button>
-      </div>
-    </>
+    <button onClick={startNewChat}>
+      <img width="16" src={Plus} alt="" /> New Chat
+    </button>
   );
 }
 

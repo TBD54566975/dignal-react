@@ -4,12 +4,8 @@ import Sidebar from './components/sidebar/Sidebar';
 function Chat() {
   return (
     <div className="chat-container">
-      <div className="sidebar">
-        <Sidebar />
-      </div>
-      <div className="chat-window">
-        <ChatWindow />
-      </div>
+      <Sidebar />
+      <ChatWindow />
     </div>
   );
 }

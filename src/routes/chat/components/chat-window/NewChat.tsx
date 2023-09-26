@@ -4,6 +4,7 @@ import { useState, KeyboardEvent } from 'react';
 import { IProfileRecord } from '../../types';
 import { getChatProfile, writeMessageToDwn } from '../../utils';
 import { useNavigate } from 'react-router-dom';
+import ChatHeader from './ChatHeader';
 
 function NewChat() {
   const [recipientProfile, setRecipientProfile] = useState<
@@ -44,43 +45,30 @@ function NewChat() {
   }
   return (
     <div className="container text-center">
-      <div className="row-px chat-header">
-        {recipientProfile ? (
-          <>
-            <div className="profile-row">
-              <button onClick={() => setRecipientProfile(undefined)}>
-                Cancel
-              </button>
-            </div>
-            <div className="avatar">
-              <img src={recipientProfile.picture} alt="" />
-            </div>
-            <div className="chat-name">
-              <h2>{recipientProfile.name}</h2>
-            </div>
-          </>
-        ) : (
-          <>
-            <label htmlFor="recipientDid" className="sr-only">
-              To:{' '}
-            </label>
-            <input
-              autoComplete="off"
-              id="recipientDid"
-              type="text"
-              onKeyUp={addRecipients}
-              placeholder="To:"
-            />
-          </>
-        )}
-      </div>
+      <ChatHeader profile={recipientProfile} />
+      {!recipientProfile && (
+        <div className="profile-column">
+          <label htmlFor="recipientDid" className="sr-only">
+            To:{' '}
+          </label>
+          <input
+            autoComplete="off"
+            id="recipientDid"
+            type="text"
+            onKeyUp={addRecipients}
+            placeholder="To:"
+          />
+          <p>or</p>
+          <button>Share my QR</button>
+        </div>
+      )}
       <div className="history-window visually-hide-scrollbar">
         <div className="chat-window">
           {/* Empty window for presentation purposes only */}
         </div>
       </div>
       {recipientProfile && (
-        <div className="row-px message-input">
+        <div className="message-input">
           <label htmlFor="messageInput" className="sr-only">
             Enter message
           </label>

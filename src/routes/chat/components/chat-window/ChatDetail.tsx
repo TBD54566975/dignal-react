@@ -1,12 +1,11 @@
 import { KeyboardEvent, useEffect, useState } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
 import { userDid, queryRecords, readRecord } from '@util/web5';
-import { ChatProtocol } from '@util/protocols/chat.protocol';
 import { getChatProfile, writeMessageToDwn } from '../../utils';
 import { IChatMessage, IProfileRecord } from '../../types';
 import { convertTime } from '../../../../util/helpers';
 import { Record } from '@web5/api';
-import { RoutePaths } from '@/routes';
+import ChatHeader from './ChatHeader';
 
 function ChatDetail() {
   const chatId = useOutletContext<string>();
@@ -58,8 +57,6 @@ function ChatDetail() {
     };
   }, [chatId]);
 
-  const navigate = useNavigate();
-
   async function sendMessage(
     e: KeyboardEvent<HTMLInputElement> & HTMLInputElement,
   ) {
@@ -72,28 +69,6 @@ function ChatDetail() {
         const messages = await populateMessages(chatId);
         setCurrentMessages(messages);
       }
-    }
-  }
-
-  async function deleteChat() {
-    if (currentRootRecord) {
-      // delete all chats in a context, but preserve the root context
-      // so other participant can reignite chat context if needed
-      const { records } = await queryRecords({
-        message: {
-          filter: {
-            protocol: ChatProtocol.protocol,
-            protocolPath: 'message/reply',
-            contextId: currentRootRecord.contextId,
-          },
-        },
-      });
-      if (records) {
-        for (const record of records) {
-          await record.delete();
-        }
-      }
-      navigate(RoutePaths.CHAT);
     }
   }
 
@@ -113,17 +88,7 @@ function ChatDetail() {
         </div>
       ) : (
         <div className="container text-center">
-          <div className="row-px chat-header">
-            <div className="profile-row">
-              <button onClick={deleteChat}>Delete</button>
-            </div>
-            <div className="avatar">
-              <img src={currentChatProfile?.picture} alt="" />
-            </div>
-            <div className="chat-name">
-              <h1>{currentChatProfile?.name}</h1>
-            </div>
-          </div>
+          <ChatHeader profile={currentChatProfile} />
           <div className="history-window visually-hide-scrollbar">
             <div className="chat-window-inner">
               {currentMessages.map((chat, index) => {
@@ -139,7 +104,7 @@ function ChatDetail() {
               })}
             </div>
           </div>
-          <div className="row-px message-input">
+          <div className="message-input">
             <label htmlFor="messageInput" className="sr-only">
               Enter message
             </label>
