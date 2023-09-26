@@ -1,11 +1,13 @@
-import { Outlet as ChatOutlet, useParams } from 'react-router-dom';
+import { RoutePaths } from '@/routes';
+import { Outlet as ChatOutlet, useLocation, useParams } from 'react-router-dom';
 
 function ChatWindow() {
   const params = useParams();
+  const location = useLocation();
 
   return (
     <>
-      {params.chatId ? (
+      {params.chatId || location.pathname === RoutePaths.NEW_CHAT ? (
         <ChatOutlet context={params.chatId} />
       ) : (
         <div className="layout">
