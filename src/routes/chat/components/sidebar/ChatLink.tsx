@@ -18,10 +18,10 @@ function ChatLink({ chat }: { chat: IChat }) {
       <div className="contents">
         <div className="message">
           <h2>{chat.name}</h2>
-          <p>{chat.message}</p>
+          {/* <p>{chat.message}</p> */}
         </div>
         <div className="meta">
-          <p className={!chat.seen ? 'text-highlight' : ''}>{chat.timestamp}</p>
+          {/* <p className={!chat.seen ? 'text-highlight' : ''}>{chat.timestamp}</p> */}
           {chat.isAuthor && <p className="text-xxs">Sent</p>}
         </div>
       </div>

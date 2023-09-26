@@ -1,11 +1,11 @@
 import { KeyboardEvent, useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { userDid, queryRecords, readRecord, writeRecord } from '@util/web5';
+import { useNavigate, useOutletContext } from 'react-router-dom';
+import { userDid, queryRecords, readRecord } from '@util/web5';
 import { ChatProtocol } from '@util/protocols/chat.protocol';
-import { getParticipantProfile } from '../../utils';
+import { getChatProfile, writeMessageToDwn } from '../../utils';
 import { IChatMessage, IProfileRecord } from '../../types';
-import SingleUser from '@assets/sample-pictures/single-user.svg';
-import GroupUser from '@assets/sample-pictures/group-user.svg';
+import { Record } from '@web5/api';
+import { RoutePaths } from '@/routes';
 
 function ChatDetail() {
   const chatId = useOutletContext<string>();
@@ -15,52 +15,84 @@ function ChatDetail() {
     useState<IProfileRecord>();
   const [recipients, setRecipients] = useState<string[]>();
   const [currentMessages, setCurrentMessages] = useState<IChatMessage[]>([]);
+  const [currentRootRecord, setCurrentRootRecord] = useState<Record>();
+
+  function resetChatContext() {
+    setIsError(false);
+    setCurrentChatProfile(undefined);
+    setRecipients(undefined);
+    setCurrentMessages([]);
+  }
 
   useEffect(() => {
-    const intervalId = setInterval(async () => {
-      const messages = await populateMessages(chatId);
-      setCurrentMessages(messages);
-    }, 5000);
-    return () => clearInterval(intervalId);
-  }, [chatId]);
-
-  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
     setIsLoading(true);
-    async function getChatItem() {
+    async function fetchChatMessages() {
       const messages = await populateMessages(chatId);
       setCurrentMessages(messages);
-      const { record } = await readRecord({
-        message: { recordId: chatId },
-      });
+    }
+    async function getChatItem() {
+      const { record, participants } = await getChatParticipants(chatId);
+      setCurrentRootRecord(record);
       if (!record) {
         setIsError(true);
+      } else {
+        // populate messages the first time
+        void fetchChatMessages();
+        // query every 5 seconds for more
+        intervalId = setInterval(async () => {
+          void fetchChatMessages();
+        }, 5000);
+        // get the chat participants
+        const chatProfile = await getChatProfile(participants);
+        setRecipients(participants);
+        setCurrentChatProfile(chatProfile);
       }
-      const chatItem = await record.data.json();
-      const participants = chatItem.recipients.filter(
-        (recipientDid: string) => recipientDid !== userDid,
-      );
-      const chatProfile = await getChatProfile(participants);
-      setRecipients(participants);
-      setCurrentChatProfile(chatProfile);
       setIsLoading(false);
     }
     void getChatItem();
+    return () => {
+      clearInterval(intervalId);
+      resetChatContext();
+    };
   }, [chatId]);
+
+  const navigate = useNavigate();
 
   async function sendMessage(
     e: KeyboardEvent<HTMLInputElement> & HTMLInputElement,
   ) {
     e.preventDefault();
     if (e.key === 'Enter' && e.currentTarget.value) {
-      if (recipients) {
-        const messages = await writeMessageToDwn(
-          e.currentTarget.value,
-          chatId,
-          recipients,
-        );
+      const messageToSend = e.currentTarget.value;
+      e.currentTarget.value = '';
+      if (recipients && currentRootRecord) {
+        await writeMessageToDwn(messageToSend, chatId, recipients);
+        const messages = await populateMessages(chatId);
         setCurrentMessages(messages);
       }
-      e.currentTarget.value = '';
+    }
+  }
+
+  async function deleteChat() {
+    if (currentRootRecord) {
+      // delete all chats in a context, but preserve the root context
+      // so other participant can reignite chat context if needed
+      const { records } = await queryRecords({
+        message: {
+          filter: {
+            protocol: ChatProtocol.protocol,
+            protocolPath: 'message/reply',
+            contextId: currentRootRecord.contextId,
+          },
+        },
+      });
+      if (records) {
+        for (const record of records) {
+          await record.delete();
+        }
+      }
+      navigate(RoutePaths.CHAT);
     }
   }
 
@@ -81,6 +113,9 @@ function ChatDetail() {
       ) : (
         <div className="container text-center">
           <div className="row-px chat-header">
+            <div className="profile-row">
+              <button onClick={deleteChat}>Delete</button>
+            </div>
             <div className="avatar">
               <img src={currentChatProfile?.picture} alt="" />
             </div>
@@ -125,48 +160,16 @@ function ChatDetail() {
 
 export default ChatDetail;
 
-async function getChatProfile(participants: string[]) {
-  if (participants.length > 1) {
-    return {
-      name: 'Group',
-      picture: GroupUser,
-    };
-  } else {
-    const profile = await getParticipantProfile(participants[0]);
-    return {
-      name: (profile && profile.name) || participants[0].slice(0, 24), //arbitrary slice
-      picture: (profile && URL.createObjectURL(profile.picture)) || SingleUser,
-    };
-  }
-}
-
-async function writeMessageToDwn(
-  text: string,
-  chatId: string,
-  recipients: string[],
-) {
-  //TODO: remove author from data once issue resolved
-  const { record } = await writeRecord({
-    data: {
-      text,
-      author: userDid,
-    },
-    message: {
-      protocol: ChatProtocol.protocol,
-      protocolPath: 'message/reply',
-      schema: ChatProtocol.types.message.schema,
-      contextId: chatId,
-      parentId: chatId,
-    },
+async function getChatParticipants(chatId: string) {
+  const { record } = await readRecord({
+    message: { recordId: chatId },
   });
-  if (record) {
-    if (recipients && recipients.length > 0) {
-      for (const targetRecipient of recipients) {
-        await record.send(targetRecipient);
-      }
-    }
-  }
-  return await populateMessages(chatId);
+  if (!record) return { record };
+  const chatItem = await record.data.json();
+  const participants = chatItem.recipients.filter(
+    (recipientDid: string) => recipientDid !== userDid,
+  );
+  return { record, participants };
 }
 
 async function populateMessages(contextId: string) {

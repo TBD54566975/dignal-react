@@ -5,7 +5,7 @@ import SingleUser from '@assets/sample-pictures/single-user.svg';
 import GroupUser from '@assets/sample-pictures/group-user.svg';
 import ChatLink from './ChatLink';
 import { ChatProtocol } from '@util/protocols/chat.protocol';
-import { convertTime, convertBlobToUrl } from '@/util/helpers';
+import { convertTime, convertBlobToUrl, copyToClipboard } from '@/util/helpers';
 import { IChat, IProfile, IProfileRecord } from '@routes/chat/types';
 import { getParticipantProfile } from '../../utils';
 import StartNewChat from './StartNewChat';
@@ -33,6 +33,7 @@ function Sidebar() {
     <div>
       <StartNewChat />
       <ProfileRow />
+      <CopyDidButton />
       <ul className="messages">
         {chatList.map((chat, index) => {
           return (
@@ -47,6 +48,14 @@ function Sidebar() {
 }
 
 export default Sidebar;
+
+function CopyDidButton() {
+  return (
+    <div className="profile-row">
+      <button onClick={() => copyToClipboard(userDid)}>Copy my DID</button>
+    </div>
+  );
+}
 
 function ProfileRow() {
   const [profile, setProfile] = useState<IProfile>();
@@ -86,6 +95,26 @@ async function getDwnChatList() {
       },
     },
   });
+  if (records) {
+    // check for root contexts that have chats saved locally
+    // in case user previously deleted a chat, which would have nuked all messages but not root context
+    const listedRecords = [];
+    for (const record of records) {
+      const { records: replyRecords } = await queryRecords({
+        message: {
+          filter: {
+            protocol: ChatProtocol.protocol,
+            protocolPath: 'message/reply',
+            contextId: record.contextId,
+          },
+        },
+      });
+      if (replyRecords && replyRecords.length > 0) {
+        listedRecords.push(record);
+      }
+    }
+    return listedRecords;
+  }
   return records;
 }
 
@@ -139,7 +168,6 @@ async function getLatestProfileRecord() {
     },
   });
   if (records) {
-    console.log(records);
     return records[records.length - 1];
   }
 }
@@ -150,7 +178,6 @@ async function getProfilePictureRecord(photoRecordId: string) {
       recordId: photoRecordId,
     },
   });
-  console.log(photoData);
   return photoData;
 }
 
