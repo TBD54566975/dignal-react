@@ -6,7 +6,6 @@ export type IChatMessage = {
   isAuthor: boolean;
   delivered?: boolean;
   seen?: boolean;
-
   id: string;
 };
 
@@ -19,6 +18,9 @@ export type IChatRecord = {
   name: string;
   picture: string;
   record: Record;
+  message?: string;
+  timestamp?: string;
+  isAuthor?: boolean;
 };
 
 export type IProfile = {

@@ -1,17 +1,14 @@
 import { useEffect, useState } from 'react';
-import { ProfileProtocol } from '@util/protocols/profile.protocol';
-import { userDid, queryRecords, readRecord } from '@util/web5';
-import SingleUser from '@assets/sample-pictures/single-user.svg';
-import GroupUser from '@assets/sample-pictures/group-user.svg';
+import { userDid } from '@util/web5';
 import ChatLink from './ChatLink';
-import { ChatProtocol } from '@util/protocols/chat.protocol';
+import { copyToClipboard, resetIndexedDb } from '@/util/helpers';
+import { IChatRecord, IProfileRecord } from '@routes/chat/types';
 import {
-  convertBlobToUrl,
-  copyToClipboard,
-  resetIndexedDb,
-} from '@/util/helpers';
-import { IChatRecord, IProfile, IProfileRecord } from '@routes/chat/types';
-import { getParticipantProfile, hideSidebar } from '../../utils';
+  getAllOtherChatParticipants,
+  getChatProfile,
+  getDwnProfile,
+  hideSidebar,
+} from '../../utils';
 import StartNewChat from './StartNewChat';
 import { Record } from '@web5/api';
 import { getLocalTheme, updateLocalTheme } from '@/routes/theme';
@@ -20,6 +17,7 @@ import Sun from '@assets/icons/sun.svg';
 import Moon from '@assets/icons/moon.svg';
 import Trash from '@assets/icons/trash.svg';
 import Close from '@assets/icons/x-close.svg';
+import { queryFromDwnMessageReplies, queryFromDwnMessages } from '../../dwn';
 
 function Sidebar() {
   return (
@@ -51,17 +49,19 @@ function ChatList() {
   useEffect(() => {
     // We populate our list at first render
     async function getLatestChats() {
-      const dwnChats = await populateChats();
-      setChatList(dwnChats);
+      const dwnChatList = await populateChats();
+      setChatList(dwnChatList);
     }
     void getLatestChats();
+
     // Every 5s, we check for new chats
     // TODO: change once subs come in
     const intervalId = setInterval(async () => {
       getLatestChats();
     }, 5000);
     return () => clearInterval(intervalId);
-  }, [chatList.length]);
+  }, []);
+
   return (
     <ul className="messages">
       {chatList.map((chat, index) => {
@@ -118,23 +118,24 @@ function ChatFooter() {
 }
 
 function Profile() {
-  const [profile, setProfile] = useState<IProfile>();
+  const [profile, setProfile] = useState<IProfileRecord>();
   useEffect(() => {
     async function getProfile() {
-      const profile = await transformUserProfile(await getUserProfile());
+      const profile = await getDwnProfile();
       if (profile) {
         setProfile(profile);
       }
     }
     void getProfile();
   }, []);
+
   return (
     <>
       {profile && (
         <div className="profile-row">
           <div className="avatar-container">
             <div className="avatar">
-              <img src={convertBlobToUrl(profile.picture)} alt="" />
+              <img src={profile.picture} alt="" />
             </div>
           </div>
           <p>{profile.name}</p>
@@ -152,119 +153,39 @@ function Profile() {
 }
 
 async function getDwnChatList() {
-  const { records } = await queryRecords({
-    message: {
-      filter: {
-        protocol: ChatProtocol.protocol,
-        protocolPath: 'message',
-        schema: ChatProtocol.types.message.schema,
-        dataFormat: ChatProtocol.types.message.dataFormats[0],
-      },
-    },
-  });
-  if (records) {
+  const records = await queryFromDwnMessages();
+  let chatsWithMessages;
+  if (records && records.length > 0) {
     // check for root contexts that have chats saved locally
     // in case user previously deleted a chat, which would have nuked all messages but not root context
-    const listedRecords = [];
+    chatsWithMessages = [];
     for (const record of records) {
-      const { records: replyRecords } = await queryRecords({
-        message: {
-          filter: {
-            protocol: ChatProtocol.protocol,
-            protocolPath: 'message/reply',
-            contextId: record.contextId,
-          },
-        },
-      });
+      const replyRecords = await queryFromDwnMessageReplies(record.contextId);
       if (replyRecords && replyRecords.length > 0) {
-        listedRecords.push(record);
+        chatsWithMessages.push(record);
       }
     }
-    return listedRecords;
   }
-  return records;
-}
-
-async function transformDwnChatRecord(record: Record) {
-  const chatItem = await record.data.json();
-  const participants = chatItem.recipients.filter(
-    (recipientDid: string) => recipientDid !== userDid,
-  );
-  const participantsProfiles = [];
-  for (const participant of participants) {
-    const profile = await getParticipantProfile(participant);
-    participantsProfiles.push({
-      name: (profile && profile.name) || participant.slice(0, 24), //arbitrary slice
-      picture: (profile && URL.createObjectURL(profile.picture)) || SingleUser,
-    });
-  }
-  return {
-    name: participants.length > 1 ? 'Group' : participantsProfiles[0].name,
-    picture:
-      participants.length > 1 ? GroupUser : participantsProfiles[0].picture,
-    // TODO : once subs come in populate with latest message
-    record,
-  };
+  return chatsWithMessages;
 }
 
 async function populateChats() {
   const dwnChats = [];
-  const records = await getDwnChatList();
-  if (records) {
-    for (const record of records) {
-      dwnChats.push(await transformDwnChatRecord(record));
+  const dwnChatList = await getDwnChatList();
+  if (dwnChatList && dwnChatList.length > 0) {
+    for (const dwnChatListRecord of dwnChatList) {
+      dwnChats.push(await transformRecordToChat(dwnChatListRecord));
     }
   }
   return dwnChats;
 }
 
-async function getLatestProfileRecord() {
-  const { records } = await queryRecords({
-    message: {
-      filter: {
-        protocol: ProfileProtocol.protocol,
-        protocolPath: 'profile',
-        schema: ProfileProtocol.types.profile.schema,
-        dataFormat: ProfileProtocol.types.profile.dataFormats[0],
-      },
-    },
-  });
-  if (records) {
-    return records[records.length - 1];
-  }
-}
-
-async function getProfilePictureRecord(photoRecordId: string) {
-  const { record: photoData } = await readRecord({
-    message: {
-      recordId: photoRecordId,
-    },
-  });
-  return photoData;
-}
-
-async function getUserProfile() {
-  const latestProfileRecord = await getLatestProfileRecord();
-  if (latestProfileRecord) {
-    const profileData = await latestProfileRecord.data.json();
-    return profileData;
-  }
-}
-
-async function getUserPicture(profileData: IProfileRecord) {
-  const photoData = await getProfilePictureRecord(profileData.picture);
-  if (photoData) {
-    const blob = await photoData.data.blob();
-    return blob;
-  }
-}
-
-async function transformUserProfile(profileData: IProfileRecord) {
-  const blob = await getUserPicture(profileData);
-  if (blob) {
-    return {
-      name: profileData.name,
-      picture: blob,
-    };
-  }
+async function transformRecordToChat(record: Record) {
+  const { recipients } = await record.data.json();
+  const participants = getAllOtherChatParticipants(recipients);
+  const chatProfile = await getChatProfile(participants);
+  return {
+    ...chatProfile,
+    record,
+  };
 }

@@ -1,10 +1,15 @@
-import { ChatProtocol } from '@/util/protocols/chat.protocol';
-import { queryRecords, userDid, writeRecord } from '@/util/web5';
 import { useState, KeyboardEvent } from 'react';
 import { IProfileRecord } from '../../types';
 import { getChatProfile, writeMessageToDwn } from '../../utils';
 import { useNavigate } from 'react-router-dom';
 import ChatHeader from './ChatHeader';
+import { RoutePaths } from '@/routes';
+import {
+  queryFromDwnMessageReplies,
+  queryFromDwnMessagesWithParticipant,
+  queryFromDwnParticipantMessages,
+  writeToDwnMessage,
+} from '../../dwn';
 
 function NewChat() {
   const [recipientProfile, setRecipientProfile] = useState<
@@ -19,9 +24,9 @@ function NewChat() {
     e.preventDefault();
     if (e.key === 'Enter' && e.currentTarget.value) {
       const recipientDid = e.currentTarget.value;
-      const duplicateChatId = await checkForDuplicateRecords(recipientDid);
+      const duplicateChatId = await checkForDuplicateChats(recipientDid);
       if (duplicateChatId) {
-        navigate(`/chat/${duplicateChatId}`);
+        navigate(`${RoutePaths.CHAT}/${duplicateChatId}`);
       }
       setRecipientProfile({
         ...(await getChatProfile([recipientDid])),
@@ -39,7 +44,7 @@ function NewChat() {
       const chatId = await getNewChatId(recipientProfile.did);
       if (chatId) {
         await writeMessageToDwn(messageToSend, chatId, [recipientProfile.did]);
-        navigate(`/chat/${chatId}`);
+        navigate(`${RoutePaths.CHAT}/${chatId}`);
       }
     }
   }
@@ -89,31 +94,12 @@ function NewChat() {
 
 export default NewChat;
 
-async function checkForDuplicateRecords(recipient: string) {
+async function checkForDuplicateChats(recipient: string) {
   // Check if chat exists already where user had initiated the chat
-  let duplicateRecords;
-  const { records: duplicateRecordsFrom } = await queryRecords({
-    from: recipient,
-    message: {
-      filter: {
-        protocol: ChatProtocol.protocol,
-        protocolPath: 'message',
-      },
-    },
-  });
-  duplicateRecords = duplicateRecordsFrom;
-  if (!duplicateRecordsFrom || duplicateRecordsFrom.length === 0) {
+  let duplicateRecords = await queryFromDwnParticipantMessages(recipient);
+  if (!duplicateRecords || duplicateRecords.length === 0) {
     // Else check if chat exists already where recipient had initiated chat
-    const { records: duplicateRecordsTo } = await queryRecords({
-      message: {
-        filter: {
-          protocol: ChatProtocol.protocol,
-          protocolPath: 'message',
-          recipient,
-        },
-      },
-    });
-    duplicateRecords = duplicateRecordsTo;
+    duplicateRecords = await queryFromDwnMessagesWithParticipant(recipient);
   }
   if (duplicateRecords && duplicateRecords.length > 0) {
     if (duplicateRecords.length > 1) {
@@ -121,36 +107,19 @@ async function checkForDuplicateRecords(recipient: string) {
       console.warn('More than 1 record found for protocolPath `message`');
     }
     // check to see if chats were previously wiped, which would be a new chat for our user
-    const { records: savedRecords } = await queryRecords({
-      message: {
-        filter: {
-          protocol: ChatProtocol.protocol,
-          protocolPath: 'message/reply',
-          contextId: duplicateRecords[0].contextId,
-        },
-      },
-    });
+    const savedRecords = await queryFromDwnMessageReplies(
+      duplicateRecords[0].contextId,
+    );
     if (savedRecords && savedRecords.length > 0) {
       return duplicateRecords[0].id;
     }
   }
-  // Else, no duplicates were found
+  // Else, no existing duplicate chats were found
   return null;
 }
 
 async function getNewChatId(recipient: string) {
-  const { record } = await writeRecord({
-    data: {
-      recipients: [recipient, userDid],
-    },
-    message: {
-      protocol: ChatProtocol.protocol,
-      protocolPath: 'message',
-      schema: ChatProtocol.types.message.schema,
-      recipient: userDid, // make self the recipient just so we can check for dupes
-      // since we dont want to publish all our chats so anyone can query
-    },
-  });
+  const record = await writeToDwnMessage(recipient);
   if (record) {
     await record.send(recipient);
     return record.id;

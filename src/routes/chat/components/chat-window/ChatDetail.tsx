@@ -1,11 +1,17 @@
 import { KeyboardEvent, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { userDid, queryRecords, readRecord } from '@util/web5';
-import { getChatProfile, writeMessageToDwn } from '../../utils';
+import { userDid } from '@util/web5';
+import {
+  getAllOtherChatParticipants,
+  getChatProfile,
+  readMessageFromDwn,
+  writeMessageToDwn,
+} from '../../utils';
 import { IChatMessage, IProfileRecord } from '../../types';
 import { convertTime } from '../../../../util/helpers';
 import { Record } from '@web5/api';
 import ChatHeader from './ChatHeader';
+import { queryFromDwnMessageReplies } from '../../dwn';
 
 function ChatDetail() {
   const chatId = useOutletContext<string>();
@@ -34,7 +40,7 @@ function ChatDetail() {
     async function getChatItem() {
       const { record, participants } = await getChatParticipants(chatId);
       setCurrentRootRecord(record);
-      if (!record) {
+      if (!record || !participants) {
         setIsError(true);
       } else {
         // populate messages the first time
@@ -65,9 +71,19 @@ function ChatDetail() {
       const messageToSend = e.currentTarget.value;
       e.currentTarget.value = '';
       if (recipients && currentRootRecord) {
-        await writeMessageToDwn(messageToSend, chatId, recipients);
-        const messages = await populateMessages(chatId);
-        setCurrentMessages(messages);
+        const record = await writeMessageToDwn(
+          messageToSend,
+          chatId,
+          recipients,
+        );
+        if (record) {
+          const message = await transformRecordToMessage(record);
+          setCurrentMessages(prev => {
+            return [...prev, message];
+          });
+          const messages = await populateMessages(chatId);
+          setCurrentMessages(messages);
+        }
       }
     }
   }
@@ -127,37 +143,33 @@ function ChatDetail() {
 export default ChatDetail;
 
 async function getChatParticipants(chatId: string) {
-  const { record } = await readRecord({
-    message: { recordId: chatId },
-  });
+  const record = await readMessageFromDwn(chatId);
   if (!record) return { record };
-  const chatItem = await record.data.json();
-  const participants = chatItem.recipients.filter(
-    (recipientDid: string) => recipientDid !== userDid,
-  );
+  const { recipients } = await record.data.json();
+  const participants = getAllOtherChatParticipants(recipients);
   return { record, participants };
 }
 
 async function populateMessages(contextId: string) {
-  const { records } = await queryRecords({
-    message: {
-      filter: { contextId, protocolPath: 'message/reply' },
-    },
-  });
+  const records = await queryFromDwnMessageReplies(contextId);
   const messages = [];
-  if (records) {
+  if (records && records.length > 0) {
     for (const record of records) {
-      const data = await record.data.json();
-      messages.push({
-        message: data.text,
-        timestamp: convertTime(record.dateModified),
-        //TODO: change to `record.author`
-        isAuthor: userDid === data.author,
-        delivered: true,
-        seen: true,
-        id: record.id,
-      });
+      messages.push(await transformRecordToMessage(record));
     }
   }
   return messages;
+}
+
+async function transformRecordToMessage(record: Record) {
+  const data = await record.data.json();
+  return {
+    message: data.text,
+    timestamp: convertTime(record.dateModified),
+    //TODO: change to `record.author`
+    isAuthor: userDid === data.author,
+    delivered: true,
+    seen: true,
+    id: record.id,
+  };
 }
