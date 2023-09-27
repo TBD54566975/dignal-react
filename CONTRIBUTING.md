@@ -44,6 +44,12 @@ $> nvm -v
 0.39.1
 ```
 
+## Install dependencies
+
+```
+$> npm install
+```
+
 ## Run the app development mode
 
 ```
