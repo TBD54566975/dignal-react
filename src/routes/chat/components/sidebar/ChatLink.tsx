@@ -2,17 +2,15 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { RoutePaths } from '@/routes';
 import { IChatRecord } from '@routes/chat/types';
 import Close from '@assets/icons/x-close.svg';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent } from 'react';
 import { deleteMessagesFromDwn, hideSidebar } from '../../utils';
 import { queryFromDwnMessageReplies } from '../../dwn';
 
 function ChatLink({ chat }: { chat: IChatRecord }) {
-  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   async function deleteChat(e: MouseEvent<HTMLButtonElement>) {
-    setIsDeleting(true);
     e.preventDefault();
     // delete all chats in a context, but preserve the root context
     // so other participant can reignite chat context if needed
@@ -40,7 +38,7 @@ function ChatLink({ chat }: { chat: IChatRecord }) {
         </div>
         <div className="contents">
           <div className="message">
-            {isDeleting ? <p>Deleting...</p> : <h2>{chat.name}</h2>}
+            <h2>{chat.name}</h2>
           </div>
         </div>
       </NavLink>
