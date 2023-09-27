@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@web5/api": "^0.8.1",
+    "@web5/credentials": "^0.3.0",
     "i": "^0.3.7",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.1",
