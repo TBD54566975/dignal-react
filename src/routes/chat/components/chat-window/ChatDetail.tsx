@@ -115,11 +115,15 @@ function ChatDetail() {
           <div className="history-window visually-hide-scrollbar">
             <div className="chat-window-inner">
               {currentMessages.map((chat, index) => {
+                const isEmoji = matchEmoji(chat.message);
                 return (
                   <p
                     key={index}
                     data-record-id={chat.id}
-                    className={`${chat.isAuthor ? 'sent' : 'received'}`}
+                    className={`
+                    ${chat.isAuthor ? 'sent' : 'received'} 
+                    ${isEmoji ? 'text-lg' : ''}
+                    `}
                   >
                     {chat.message}
                   </p>
@@ -149,6 +153,10 @@ function ChatDetail() {
 }
 
 export default ChatDetail;
+
+function matchEmoji(text: string) {
+  return /^\p{Extended_Pictographic}$/u.test(text);
+}
 
 async function getChatParticipants(chatId: string) {
   const record = await readMessageFromDwn(chatId);
