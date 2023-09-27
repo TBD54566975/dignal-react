@@ -454,6 +454,9 @@ input[type='text']:focus-visible {
 .qr-code-container {
   max-width: 260px;
   margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 /* sidebar on mobile */
