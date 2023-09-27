@@ -446,6 +446,14 @@ input[type='text']:focus-visible {
   display: flex;
   flex-direction: column;
   padding: var(--sp-lg);
+  gap: 1rem;
+}
+
+/* qr code */
+
+.qr-code-container {
+  max-width: 260px;
+  margin: auto;
 }
 
 /* sidebar on mobile */
