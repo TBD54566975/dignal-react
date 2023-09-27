@@ -6,6 +6,7 @@ import { IChatMessage, IProfileRecord } from '../../types';
 import { convertTime } from '../../../../util/helpers';
 import { Record } from '@web5/api';
 import ChatHeader from './ChatHeader';
+import { VcJwt, VerifiableCredential } from '@web5/credentials';
 
 function ChatDetail() {
   const chatId = useOutletContext<string>();
