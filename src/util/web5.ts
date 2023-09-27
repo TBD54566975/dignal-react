@@ -83,3 +83,10 @@ export async function queryProtocols(
 ): Promise<ProtocolsQueryResponse> {
   return web5.dwn.protocols.query(queryRequest);
 }
+
+export const QueryDateSort = {
+  createdAscending:
+    'createdAscending' as RecordsQueryRequest['message']['dateSort'],
+  createdDescending:
+    'createdDescending' as RecordsQueryRequest['message']['dateSort'],
+};

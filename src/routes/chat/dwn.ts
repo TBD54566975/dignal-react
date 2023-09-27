@@ -1,6 +1,12 @@
 import { ChatProtocol } from '@/util/protocols/chat.protocol';
 import { ProfileProtocol } from '@/util/protocols/profile.protocol';
-import { queryRecords, readRecord, userDid, writeRecord } from '@/util/web5';
+import {
+  QueryDateSort,
+  queryRecords,
+  readRecord,
+  userDid,
+  writeRecord,
+} from '@/util/web5';
 
 // Profiles
 export async function queryFromDwnParticipantProfile(participant: string) {
@@ -62,6 +68,7 @@ export async function queryFromDwnMessages() {
         schema: ChatProtocol.types.message.schema,
         dataFormat: ChatProtocol.types.message.dataFormats[0],
       },
+      dateSort: QueryDateSort.createdAscending,
     },
   });
   return records;
