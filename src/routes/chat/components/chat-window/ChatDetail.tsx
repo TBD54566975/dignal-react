@@ -16,7 +16,6 @@ function ChatDetail() {
     useState<IProfileRecord>();
   const [recipients, setRecipients] = useState<string[]>();
   const [currentMessages, setCurrentMessages] = useState<IChatMessage[]>([]);
-  // const [currentVerifiableCredentials, setCurrentVerifiableCredentials] = useState<VcJwt[]>([]);
   const [currentRootRecord, setCurrentRootRecord] = useState<Record>();
 
   function resetChatContext() {
@@ -31,9 +30,7 @@ function ChatDetail() {
     setIsLoading(true);
     async function fetchChatMessages() {
       const messages = await populateMessages(chatId);
-      // const verifiableCredentials = await populateVerifiableCredentials(chatId);
       setCurrentMessages(messages);
-      // setCurrentVerifiableCredentials(verifiableCredentials);
     }
     async function getChatItem() {
       const { record, participants } = await getChatParticipants(chatId);
@@ -72,9 +69,6 @@ function ChatDetail() {
         await writeMessageToDwn(messageToSend, chatId, recipients);
         const messages = await populateMessages(chatId);
         setCurrentMessages(messages);
-
-        // const verifiableCredentials = await populateVerifiableCredentials(chatId);
-        // setCurrentVerifiableCredentials(verifiableCredentials);
       }
     }
   }
@@ -168,50 +162,3 @@ async function populateMessages(contextId: string) {
   }
   return messages;
 }
-
-
-// async function populateVerifiableCredentials(contextId: string) {
-//   const { records } = await queryRecords({
-//     message: {
-//       filter: { contextId, protocolPath: 'message/reply' },
-//     },
-//   });
-//   const vcs: VcJwt[] = [];
-//   if (records) {
-//     for (const record of records) {
-//       const data = await record.data.json();
-
-//       if(isJwt(data.text)) {
-//         try {
-//           await VerifiableCredential.verify(data.text)
-//         } catch (e) {
-//           // console.warn('Invalid JWT', data.text)
-//           // console.warn(e)
-//           continue;
-//         }
-//         vcs.push(data.text);
-//       }
-
-//     }
-//   }
-//   return vcs;
-// }
-
-// function isJwt(input: string): boolean {
-//   if (typeof input !== 'string') return false;
-//   const parts = input.split('.');
-//   if (parts.length !== 3) return false;
-
-//   try {
-//     const payloadString = atob(parts[1]); 
-//     const payload = JSON.parse(payloadString);
-//     if (payload.vc) {
-//       console.log('Valid JWT')
-//       return true
-//     }
-//   } catch(e) {
-//     // console.warn('Invalid JWT', input)
-//   }
-
-//   return false;
-// }
