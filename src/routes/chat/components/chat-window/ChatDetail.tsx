@@ -1,4 +1,4 @@
-import { KeyboardEvent, useEffect, useState } from 'react';
+import { KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { userDid } from '@util/web5';
 import {
@@ -22,6 +22,7 @@ function ChatDetail() {
   const [recipients, setRecipients] = useState<string[]>();
   const [currentMessages, setCurrentMessages] = useState<IChatMessage[]>([]);
   const [currentRootRecord, setCurrentRootRecord] = useState<Record>();
+  const anchorRef = useRef<HTMLDivElement>(null);
 
   function resetChatContext() {
     setIsError(false);
@@ -29,6 +30,12 @@ function ChatDetail() {
     setRecipients(undefined);
     setCurrentMessages([]);
   }
+
+  useEffect(() => {
+    if (anchorRef) {
+      anchorRef.current?.scrollIntoView();
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -119,6 +126,7 @@ function ChatDetail() {
                 );
               })}
             </div>
+            <div id="history-window-anchor" ref={anchorRef}></div>
           </div>
           <div className="message-input">
             <label htmlFor="messageInput" className="sr-only">

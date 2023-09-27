@@ -233,7 +233,7 @@ a.message-row {
 .message p,
 .meta p {
   color: var(--color-text-tint);
-  margin-block-start: 0;
+  margin-block: 0;
 }
 
 .meta {
@@ -270,6 +270,13 @@ a.message-row {
 .history-window {
   overflow-y: scroll;
   height: 100%;
+}
+.history-window * {
+  overflow-anchor: none;
+}
+#history-window-anchor {
+  overflow-anchor: auto;
+  height: 1px;
 }
 .chat-window {
   background: var(--color-background-shade);
