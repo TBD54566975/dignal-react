@@ -47,7 +47,7 @@ $> nvm -v
 ## Run the app development mode
 
 ```
-$> npm start
+$> npm run dev
 ```
 
 ## Run the test-watcher in an interactive mode
@@ -60,6 +60,12 @@ $> npm test
 
 ```
 $> npm run build
+```
+
+## Preview the app build
+
+```
+$> npm run preview
 ```
 
 ---
