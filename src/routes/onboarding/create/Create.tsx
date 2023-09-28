@@ -123,7 +123,7 @@ function SaveButton() {
   async function saveProfileAndNavigate() {
     await setProtocols();
     await createProfile();
-    navigate(RoutePaths.CHAT + search);
+    navigate(search ? RoutePaths.NEW_CHAT + search : RoutePaths.CHAT);
   }
 
   return <button onClick={saveProfileAndNavigate}>Continue</button>;
