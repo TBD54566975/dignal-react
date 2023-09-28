@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router';
 import { connectWeb5, getWeb5Route } from '@/util/web5';
 import { setInitialTheme } from './theme';
+import { useLocation } from 'react-router-dom';
 
 setInitialTheme();
 
@@ -14,16 +15,17 @@ export default App;
 function LoadingHandler() {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { search } = useLocation();
 
   useEffect(() => {
     async function activateWeb5AndRouteUser() {
       await connectWeb5();
       const route = await getWeb5Route();
       setIsLoading(false);
-      route && navigate(route);
+      route && navigate(route + search);
     }
     void activateWeb5AndRouteUser();
-  }, [navigate]);
+  }, [navigate, search]);
 
   return <>{isLoading ? <LoadingSpinner /> : <Outlet />}</>;
 }

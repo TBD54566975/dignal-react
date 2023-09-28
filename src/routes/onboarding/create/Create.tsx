@@ -7,6 +7,7 @@ import { ProfileProtocol } from '@util/protocols/profile.protocol';
 import { ChatProtocol } from '@util/protocols/chat.protocol';
 import { sampleProfile } from './sampleProfiles';
 import { convertBlobToUrl } from '@/util/helpers';
+import { useLocation } from 'react-router-dom';
 
 function Create() {
   return (
@@ -117,11 +118,12 @@ function ProfileName() {
 
 function SaveButton() {
   const navigate = useNavigate();
+  const { search } = useLocation();
 
   async function saveProfileAndNavigate() {
     await setProtocols();
     await createProfile();
-    navigate(RoutePaths.CHAT);
+    navigate(RoutePaths.CHAT + search);
   }
 
   return <button onClick={saveProfileAndNavigate}>Continue</button>;
