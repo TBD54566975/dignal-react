@@ -2,7 +2,11 @@ import HamburgerMenu from '@assets/icons/hamburger-menu.svg';
 import { showSidebar } from '../../utils';
 import { IProfileRecord } from '../../types';
 
-function ChatHeader({ profile }: { profile: IProfileRecord | undefined }) {
+function ChatHeader({
+  profile,
+}: {
+  profile: IProfileRecord | undefined | false;
+}) {
   return (
     <div className="chat-header">
       <div className="profile-row">
