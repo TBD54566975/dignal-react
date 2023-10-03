@@ -43,9 +43,10 @@ function ProfilePicture() {
   const [uploadError, setUploadError] = useState('');
 
   function setAndPreviewProfilePicture(e: ChangeEvent<HTMLInputElement>) {
-    if (e.currentTarget.files && e.currentTarget.files[0].size > 1000) {
+    if (e.currentTarget.files && e.currentTarget.files[0].size > 1000000) {
+      console.log(e.currentTarget.files[0].size);
       setUploadError(
-        'Image size is too large. Please select one that is > 1MB',
+        'Image size is too large. Please select one that is < 1MB',
       );
       return;
     }
