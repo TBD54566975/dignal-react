@@ -68,7 +68,7 @@ export async function queryFromDwnMessages() {
         schema: ChatProtocol.types.message.schema,
         dataFormat: ChatProtocol.types.message.dataFormats[0],
       },
-      dateSort: QueryDateSort.createdAscending,
+      dateSort: QueryDateSort.createdDescending,
     },
   });
   return records;
