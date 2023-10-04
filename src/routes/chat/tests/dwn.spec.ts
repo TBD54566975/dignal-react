@@ -19,7 +19,7 @@ import {
   writeToDwnMessage,
   queryFromDwnMessageReplies,
   writeToDwnMessageReply,
-} from './dwn';
+} from '../dwn';
 
 vi.mock('@/util/web5', () => ({
   queryRecords: vi.fn(() => {
