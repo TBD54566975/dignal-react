@@ -16,6 +16,8 @@ export async function queryFromDwnParticipantProfile(participant: string) {
       filter: {
         protocol: ProfileProtocol.protocol,
         protocolPath: 'profile',
+        schema: ProfileProtocol.types.profile.schema,
+        dataFormat: ProfileProtocol.types.profile.dataFormats[0],
       },
     },
   });
@@ -59,6 +61,21 @@ export async function readFromDwnPicture(recordId: string) {
 }
 
 // Messages
+export async function queryFromDwnParticipantMessages(recipient: string) {
+  const { records } = await queryRecords({
+    from: recipient,
+    message: {
+      filter: {
+        protocol: ChatProtocol.protocol,
+        protocolPath: 'message',
+        schema: ChatProtocol.types.message.schema,
+        dataFormat: ChatProtocol.types.message.dataFormats[0],
+      },
+    },
+  });
+  return records;
+}
+
 export async function queryFromDwnMessages() {
   const { records } = await queryRecords({
     message: {
@@ -74,25 +91,14 @@ export async function queryFromDwnMessages() {
   return records;
 }
 
-export async function queryFromDwnParticipantMessages(recipient: string) {
-  const { records } = await queryRecords({
-    from: recipient,
-    message: {
-      filter: {
-        protocol: ChatProtocol.protocol,
-        protocolPath: 'message',
-      },
-    },
-  });
-  return records;
-}
-
 export async function queryFromDwnMessagesWithParticipant(recipient: string) {
   const { records } = await queryRecords({
     message: {
       filter: {
         protocol: ChatProtocol.protocol,
         protocolPath: 'message',
+        schema: ChatProtocol.types.message.schema,
+        dataFormat: ChatProtocol.types.message.dataFormats[0],
         recipient,
       },
     },
@@ -109,6 +115,7 @@ export async function writeToDwnMessage(recipient: string) {
       protocol: ChatProtocol.protocol,
       protocolPath: 'message',
       schema: ChatProtocol.types.message.schema,
+      dataFormat: ChatProtocol.types.message.dataFormats[0],
       recipient: userDid, // make self the recipient just so we can check for dupes
       // since we dont want to publish all our chats so anyone can query
     },
@@ -123,6 +130,8 @@ export async function queryFromDwnMessageReplies(contextId: string) {
       filter: {
         protocol: ChatProtocol.protocol,
         protocolPath: 'message/reply',
+        schema: ChatProtocol.types.reply.schema,
+        dataFormat: ChatProtocol.types.reply.dataFormats[0],
         contextId,
       },
     },
@@ -139,7 +148,8 @@ export async function writeToDwnMessageReply(text: string, chatId: string) {
     message: {
       protocol: ChatProtocol.protocol,
       protocolPath: 'message/reply',
-      schema: ChatProtocol.types.message.schema,
+      schema: ChatProtocol.types.reply.schema,
+      dataFormat: ChatProtocol.types.reply.dataFormats[0],
       contextId: chatId,
       parentId: chatId,
     },
