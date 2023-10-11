@@ -14,13 +14,13 @@ function Create() {
     <div className="layout">
       <div className="row text-center row-px">
         <h1>Your profile</h1>
-        <p>This is how others find you on Dignal.</p>
+        <p>This is how others find you on DIDChat.</p>
         <ProfilePicture />
         <ProfileName />
         <SaveButton />
         <p>
           Your profile has a unique identifier called a DID that you'll share
-          with others so they can find you on Dignal.
+          with others so they can find you on DIDChat.
         </p>
         <p>You can use this profile in other Web5 apps.</p>
       </div>

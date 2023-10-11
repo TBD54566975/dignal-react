@@ -14,7 +14,7 @@ function Onboarding() {
           src={SpeechBubble}
         />
         <div>
-          <h1 className="text-decor">Dignal</h1>
+          <h1 className="text-decor">DIDChat</h1>
           <p className="text-md">
             End-to-end encrypted, decentralized chat{' '}
             <strong>built atop the Web5 chat protocol</strong>

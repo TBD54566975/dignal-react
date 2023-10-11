@@ -5,7 +5,7 @@ import Fox from '@assets/sample-pictures/fox.png';
 
 const mockChats = [
   {
-    name: 'Dignal Welcome Chat',
+    name: 'DIDChat Welcome Chat',
     picture: Fox,
     message: 'Last message outbound',
     timestamp: '2023-08-09T01:13:54.402Z',
