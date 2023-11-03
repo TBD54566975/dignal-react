@@ -46,7 +46,14 @@ export default function ChatId() {
         if (!messageLengthAtPar) {
           const data = Promise.all(
             chatParentContext.records.map(async record => {
-              return transformDwnRecordToChatRecord(record);
+              const senderProfile = await chatParentContext.profiles.get(
+                record.recipient,
+              );
+              return transformDwnRecordToChatRecord(
+                record,
+                senderProfile?.icon,
+                senderProfile?.icon_alt,
+              );
             }),
           );
           setMessageList(await data);
@@ -108,11 +115,13 @@ export default function ChatId() {
                         messageListItem.recordSchema,
                         'log',
                       ) && (
-                        <img
-                          width={64}
-                          src={messageListItem.messageIcon}
-                          alt={messageListItem.messageIconAlt}
-                        />
+                        <div className={styles.chatRecordIcon}>
+                          <img
+                            width={48}
+                            src={messageListItem.messageIcon}
+                            alt={messageListItem.messageIconAlt}
+                          />
+                        </div>
                       )}
                     </div>
                   </li>

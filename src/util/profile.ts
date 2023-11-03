@@ -184,12 +184,11 @@ export async function addProfileIconAltText(
   return { record, status };
 }
 
-// We only want to return the text value of the label associated with the profile
-export async function getFullUserProfile(from?: string) {
+export async function getFullUserProfileWithFallbacks(from?: string) {
   return {
     label: await getUserProfileLabelWithFallback(from),
     name: await getUserProfileNameWithFallback(from),
-    icon: await getUserProfileIconAltWithFallback(from),
+    icon: await getUserProfileIconWithFallback(from),
     icon_alt: await getUserProfileIconAltWithFallback(from),
   };
 }

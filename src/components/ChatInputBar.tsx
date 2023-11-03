@@ -1,4 +1,8 @@
-import { createNewChatThreadMessage, useChatContext } from '@/util/chat';
+import {
+  createNewChatThreadMessage,
+  sendRecordToParticipants,
+  useChatContext,
+} from '@/util/chat';
 import { useState, ChangeEvent, FormEvent, useRef, useEffect } from 'react';
 import styles from './ChatInputBar.module.css';
 import Send from '@assets/buttons/send.svg';
@@ -25,42 +29,38 @@ export default function ChatInputField({
     e.preventDefault();
     const currentTarget = e.currentTarget;
     try {
-      console.time('write thread');
-      const { record } = await createNewChatThreadMessage({
-        parent: {
-          id: parentThreadId,
-          contextId,
-        },
-        message: formData.message,
-      });
-      console.timeEnd('write thread');
-      if (record && chats) {
-        console.time('write to react context');
-        const currentRecords = chats[contextId].records;
-        currentRecords?.push(record);
-        setChats(prev => {
-          return {
-            ...prev,
-            [contextId]: {
-              ...(chats && chats[contextId]),
-              records: currentRecords,
-            },
-          };
+      if (chats) {
+        const { record } = await createNewChatThreadMessage({
+          parent: {
+            id: parentThreadId,
+            contextId,
+          },
+          message: formData.message,
         });
-        console.timeEnd('write to react context');
-        console.time('send to participants');
-        for (const participant of chats[contextId].participants) {
-          await record.send(participant);
+        if (record && chats) {
+          const currentRecords = chats[contextId].records;
+          currentRecords?.push(record);
+          setChats(prev => {
+            return {
+              ...prev,
+              [contextId]: {
+                ...chats[contextId],
+                records: currentRecords,
+              },
+            };
+          });
+          currentTarget.reset();
+          setFormData(initialState);
+          await sendRecordToParticipants(record, chats[contextId].participants);
+        } else {
+          console.error('Something went wrong. please try again');
+          alert('Something went wrong. please try again');
         }
-        console.timeEnd('write to react context');
       }
     } catch (e) {
       console.error(e);
       alert(e);
     }
-
-    currentTarget.reset();
-    setFormData(initialState);
   }
 
   const inputRef = useRef<HTMLInputElement>(null);

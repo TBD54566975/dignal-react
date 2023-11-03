@@ -4,7 +4,11 @@ import RightChevron from '@assets/buttons/right-chevron.svg';
 import Modal from '@/components/Modal';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatTime } from '@/util/helpers';
-import { transformRecordToChatListEntry, useChatContext } from '@/util/chat';
+import {
+  sendRecordToParticipants,
+  transformChatContextToChatListEntry,
+  useChatContext,
+} from '@/util/chat';
 import { createPrivateOrGroupChat } from '@/util/chat';
 import { RoutePaths } from '@/util/routes';
 
@@ -57,7 +61,7 @@ export default function Chats() {
                   await createPrivateOrGroupChat('private');
                 if (newPrivateChat) {
                   const newPrivateChatListEntry =
-                    await transformRecordToChatListEntry(newPrivateChat);
+                    await transformChatContextToChatListEntry(newPrivateChat);
                   setChats(prev => {
                     return {
                       ...prev,
@@ -65,6 +69,10 @@ export default function Chats() {
                     };
                   });
                   navigate(RoutePaths.CHAT + '/' + newPrivateChat.contextId);
+                  sendRecordToParticipants(
+                    newPrivateChat,
+                    newPrivateChatListEntry.participants,
+                  );
                 }
               }}
               title="Create and go to a new private chat"
@@ -77,13 +85,24 @@ export default function Chats() {
               <img src={RightChevron} alt="" />
             </a>,
             <a
-              onClick={async () =>
-                navigate(
-                  RoutePaths.CHAT +
-                    '/' +
-                    (await createPrivateOrGroupChat('group')),
-                )
-              }
+              onClick={async () => {
+                const newGroupChat = await createPrivateOrGroupChat('group');
+                if (newGroupChat) {
+                  const newGroupChatListEntry =
+                    await transformChatContextToChatListEntry(newGroupChat);
+                  setChats(prev => {
+                    return {
+                      ...prev,
+                      [newGroupChat.contextId]: newGroupChatListEntry,
+                    };
+                  });
+                  navigate(RoutePaths.CHAT + '/' + newGroupChat.contextId);
+                  sendRecordToParticipants(
+                    newGroupChat,
+                    newGroupChatListEntry.participants,
+                  );
+                }
+              }}
               title="Create and go to a new group chat"
               className="display-link"
             >

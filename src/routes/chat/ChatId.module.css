@@ -22,6 +22,10 @@
     flex-direction: row-reverse;
     justify-content: start;
   }
+
+  & .chatRecordIcon {
+    flex: 0 0 auto;
+  }
 }
 
 .qrContainer {

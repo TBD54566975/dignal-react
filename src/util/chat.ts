@@ -8,9 +8,8 @@ import {
 } from './web5';
 import { Record } from '@web5/api';
 import {
+  getFullUserProfileWithFallbacks,
   getProfileNameIconAndIconAltForDisplay,
-  getUserProfileIconAltWithFallback,
-  getUserProfileIconWithFallback,
   getUserProfileName,
 } from './profile';
 import { useOutletContext } from 'react-router-dom';
@@ -18,11 +17,15 @@ import SingleUser from '@assets/users/single-user.svg';
 
 export async function createPrivateOrGroupChat(type: 'private' | 'group') {
   try {
+    const chatContextParticipants = [userDid];
     const { record, status } = await createNewChat({
       type,
+      participants: chatContextParticipants,
     });
     if (record) {
-      const { record: thread } = await createNewChatThread(record);
+      const { record: thread } = await createNewChatThread({
+        parent: record,
+      });
       if (thread) {
         await createNewChatThreadLog({
           parent: thread,
@@ -44,12 +47,12 @@ export async function createNewChat({
   participants,
   type,
 }: {
-  participants?: string[];
+  participants: string[];
   type: 'private' | 'group';
 }) {
-  const { record, status } = await writeRecord({
+  return await writeRecord({
     data: {
-      participants: [userDid, ...(participants ? participants : [])],
+      participants,
       type,
     },
     message: {
@@ -58,16 +61,14 @@ export async function createNewChat({
       schema: 'chat',
     },
   });
-  if (record) {
-    await record.send(userDid);
-  }
-  return { record, status };
 }
 
-export async function createNewChatThread(
-  parent: Pick<Record, 'id' | 'contextId'>,
-) {
-  const { record, status } = await writeRecord({
+export async function createNewChatThread({
+  parent,
+}: {
+  parent: Pick<Record, 'id' | 'contextId'>;
+}) {
+  return await writeRecord({
     data: {},
     message: {
       protocol: ChatsProtocol.protocol,
@@ -77,10 +78,6 @@ export async function createNewChatThread(
       contextId: parent.contextId,
     },
   });
-  if (record) {
-    await record.send(userDid);
-  }
-  return { record, status };
 }
 
 export async function createNewChatThreadLog({
@@ -90,7 +87,7 @@ export async function createNewChatThreadLog({
   parent: Pick<Record, 'id' | 'contextId'>;
   log: string;
 }) {
-  const { record, status } = await writeRecord({
+  return await writeRecord({
     data: log,
     message: {
       protocol: ChatsProtocol.protocol,
@@ -101,10 +98,6 @@ export async function createNewChatThreadLog({
       recipient: userDid,
     },
   });
-  if (record) {
-    await record.send(userDid);
-  }
-  return { record, status };
 }
 
 export async function createNewChatThreadMessage({
@@ -114,7 +107,7 @@ export async function createNewChatThreadMessage({
   parent: Pick<Record, 'id' | 'contextId'>;
   message: string;
 }) {
-  const { record, status } = await writeRecord({
+  return await writeRecord({
     data: message,
     message: {
       protocol: ChatsProtocol.protocol,
@@ -125,10 +118,6 @@ export async function createNewChatThreadMessage({
       recipient: userDid,
     },
   });
-  if (record) {
-    await record.send(userDid);
-  }
-  return { record, status };
 }
 
 export async function getAllChatContexts() {
@@ -191,7 +180,7 @@ export async function getChatContextThreadRecords(parentId: string) {
   });
 }
 
-export async function transformRecordToChatListEntry(
+export async function transformChatContextToChatListEntry(
   record: Pick<Record, 'id' | 'contextId' | 'data' | 'dateModified'>,
 ) {
   const latest = await getChatContextLatestEntry(record.contextId);
@@ -208,6 +197,16 @@ export async function transformRecordToChatListEntry(
 
   const thread = await getChatContextThread(record.contextId);
   const { records } = await getChatContextThreadRecords(thread.record.id);
+
+  const profiles = new Map();
+  for (const participant of data.participants) {
+    profiles.set(
+      participant,
+      await getFullUserProfileWithFallbacks(
+        matchUserDidToTargetDid(participant) ? undefined : participant,
+      ),
+    );
+  }
   return {
     participants: data.participants,
     type: data.type,
@@ -219,6 +218,7 @@ export async function transformRecordToChatListEntry(
     timestamp: latest.record?.dateModified ?? record.dateModified,
     thread: thread.record,
     records,
+    profiles,
   };
 }
 
@@ -227,14 +227,14 @@ export async function hydrateChatList() {
   if (records) {
     const data = Promise.all(
       records.map(async record => {
-        return await transformRecordToChatListEntry(record);
+        return await transformChatContextToChatListEntry(record);
       }),
     );
     return await data;
   }
 }
 
-export type ChatListItem = {
+export type ChatListContextItem = {
   type: 'private' | 'group';
   participants: string[];
   contextId: string;
@@ -245,8 +245,12 @@ export type ChatListItem = {
   timestamp: string;
   records: Record[] | undefined;
   thread: Record;
+  profiles: Map<
+    string,
+    Promise<{ label: string; name: string; icon: string; icon_alt: string }>
+  >;
 };
-export type ChatContextValue = { [contextId: string]: ChatListItem };
+export type ChatContextValue = { [contextId: string]: ChatListContextItem };
 export type ChatContext = [
   ChatContextValue | undefined,
   React.Dispatch<React.SetStateAction<ChatContextValue | undefined>>,
@@ -265,8 +269,8 @@ export function matchRecordSchema(recordSchema: string, targetSchema: string) {
 
 // For now, we will store the user's DID in the recipient field
 // until other means of determining original authorship in the record wrapper
-export function isSentFromUser(recordRecipient: string) {
-  return recordRecipient === userDid;
+export function matchUserDidToTargetDid(targetDid: string) {
+  return targetDid === userDid;
 }
 
 export function constructChatInviteUrl(contextId: string) {
@@ -290,19 +294,12 @@ export type ChatRecordDisplayProps = {
 }[];
 
 // TODO: Pull profile icons from external participants DWN once dwn-server picks up latest
-export async function transformDwnRecordToChatRecord(record: Record) {
-  const messageIsSentFromUser = isSentFromUser(record.recipient);
-
-  // console.time('icon');
-  const messageIcon = messageIsSentFromUser
-    ? await getUserProfileIconWithFallback()
-    : SingleUser;
-  // console.timeEnd('icon');
-  // console.time('icon alt');
-  const messageIconAlt = messageIsSentFromUser
-    ? await getUserProfileIconAltWithFallback()
-    : 'Single user avatar';
-  // console.timeEnd('icon alt');
+export async function transformDwnRecordToChatRecord(
+  record: Record,
+  messageIcon: string = SingleUser,
+  messageIconAlt: string = 'Single user avatar',
+) {
+  const messageIsSentFromUser = matchUserDidToTargetDid(record.recipient);
 
   const recordData =
     record.dataFormat === 'text/plain'
@@ -319,4 +316,13 @@ export async function transformDwnRecordToChatRecord(record: Record) {
     recordId,
     recordSchema,
   };
+}
+
+export async function sendRecordToParticipants(
+  record: Record,
+  participants: string[],
+) {
+  for (const participant of participants) {
+    await record.send(participant);
+  }
 }
