@@ -51,6 +51,30 @@
 
   /* Box Shadow */
   --box-shadow: 0 0 16px rgba(220, 220, 220, 0.25);
+
+  /* NEW */
+  --color-tab-default: #ababab;
+  --color-tab-selected: #00b3ff;
+
+  --color-text-primary: #000000;
+  --color-text-secondary: #777777;
+
+  --color-primary: #00b3ff;
+  --color-primary-tint: #008fcb;
+  --color-primary-dark: #004664;
+  --color-primary-text-contrast: #ffffff;
+  --color-secondary: #f1f1f1;
+  --color-secondary-tint: #c6c6c6;
+  --color-secondary-dark: #686868;
+  --color-secondary-text-contrast: #000000;
+
+  --color-brand-white: #ffffff;
+  --color-brand-black: #000000;
+
+  --color-tab-default-filter: invert(87%) sepia(3%) saturate(4%)
+    hue-rotate(320deg) brightness(80%) contrast(86%);
+  --color-tab-selected-filter: invert(47%) sepia(67%) saturate(2077%)
+    hue-rotate(170deg) brightness(105%) contrast(107%);
 }
 
 .dark {
@@ -78,6 +102,12 @@
 
   /* Box Shadow */
   --box-shadow: 0 0 16px rgba(220, 220, 220, 0.01);
+
+  /* Breakpoints */
+  --layout-breakpoint: 768px;
+  /* mobile max-width: 480px */
+  /* tablet max-width: 768px, 1024px */
+  /* desktop max-width: 1280px, unset */
 }
 
 /* https://angel-rs.github.io/css-color-filter-generator/ */

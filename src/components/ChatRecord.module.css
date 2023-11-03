@@ -1,0 +1,22 @@
+.message {
+  padding: 1rem;
+  background: var(--color-secondary);
+  border-radius: 999px;
+  display: inline-block;
+
+  &.messageLog {
+    margin-inline: auto;
+    font-size: 14px;
+    color: #777;
+  }
+
+  &.messageSent {
+    margin-inline-start: auto;
+    border-end-end-radius: 0;
+  }
+
+  &.messageReceived {
+    margin-inline-end: auto;
+    border-end-start-radius: 0;
+  }
+}

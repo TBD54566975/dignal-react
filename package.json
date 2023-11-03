@@ -15,7 +15,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@web5/api": "^0.8.1",
+    "@web5/api": "^0.8.1-alpha-20231003-e73c548",
     "i": "^0.3.7",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.1",

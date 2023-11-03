@@ -1,0 +1,107 @@
+.sidebar-layout {
+  display: flex;
+  height: 100dvh;
+  max-width: 2500px;
+  margin: auto;
+
+  & aside {
+    overflow-y: hidden;
+    display: flex;
+    flex: 0 1 25%;
+    border-inline-end: 1px solid var(--color-tab-default);
+
+    & nav {
+      overflow-y: hidden;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      margin-block: 4rem;
+
+      & a {
+        filter: var(--color-tab-default-filter);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 1rem;
+        font-size: 1.25rem;
+
+        &.active {
+          filter: var(--color-tab-selected-filter);
+          font-weight: bold;
+        }
+      }
+    }
+  }
+
+  & .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    &.header-treatment {
+      background: var(--color-primary);
+
+      & header {
+        color: var(--color-primary-text-contrast);
+      }
+    }
+
+    & header {
+      padding: 2rem 1rem;
+    }
+
+    & main {
+      background: var(--color-brand-white);
+      border-radius: 2rem 2rem 0 0;
+      padding: 2rem 1rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+
+      & .scroll-area {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+
+        & .scroll-content {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          overflow-y: scroll;
+          overflow-wrap: break-word;
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .sidebar-layout {
+    flex-direction: column-reverse;
+
+    & aside {
+      flex: 0 0 auto;
+      border-inline-end: none;
+      border-block-start: 1px solid var(--color-tab-default);
+
+      & nav {
+        overflow-y: hidden;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        align-items: center;
+        flex: 1;
+        margin-block: auto;
+
+        & a {
+          flex-direction: column;
+          gap: 0;
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+}

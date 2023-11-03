@@ -7,32 +7,72 @@ body {
 }
 
 button {
-  background: var(--color-primary);
-  border: none;
-  border-radius: var(--border-radius-sm);
-  color: var(--color-background);
-  font-size: var(--type-md);
-  font-weight: 500;
-  padding: var(--sp-xs);
-  width: 100%;
-  transition: ease all 0.25s;
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.25rem;
+  &.btn {
+    background: var(--color-primary);
+    color: var(--color-primary-text-contrast);
+    border-radius: 999px;
+    border: none;
+    padding: 0.5rem 1rem;
+    margin-inline: auto;
+    max-width: 768px;
+    font-weight: bold;
+
+    & > img {
+      filter: var(--color-base-invert-filter);
+    }
+  }
+
+  &.expanded {
+    width: -webkit-fill-available;
+  }
+
+  &.secondary {
+    background: var(--color-secondary);
+    color: var(--color-secondary-text-contrast);
+  }
 }
 
-button:hover,
-button:focus {
-  background: var(--color-highlight);
+button.btn:hover:not(:disabled),
+button.btn:focus-visible:not(:disabled) {
+  background: var(--color-primary-tint);
 }
 
-button:active {
-  background: var(--color-accent);
+button.btn:active:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+button.secondary:hover:not(:disabled),
+button.secondary:focus-visible:not(:disabled) {
+  background: var(--color-secondary-tint);
+}
+
+button.secondary:active:not(:disabled) {
+  background: var(--color-secondary-dark);
 }
 
 button:disabled {
-  opacity: 0.1;
+  cursor: unset;
+  opacity: 0.5;
+}
+
+a.display-link {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block: 2rem;
+
+  & .display-link-detail {
+    display: flex;
+    gap: 1rem;
+
+    & h2 {
+      font-size: var(--font-md);
+    }
+  }
 }
 
 .icon-button-primary > img {
@@ -54,7 +94,7 @@ select {
   background: var(--color-input-background);
   border: none;
   border-radius: var(--border-radius-sm);
-  padding: var(--sp-sm);
+  padding: var(--sp-xs);
   width: 100%;
 }
 
@@ -352,8 +392,8 @@ a.message-row.active,
   box-shadow: var(--box-shadow);
 }
 
-input[type='text']:focus-visible {
-  outline: var(--color-accent) solid 1px;
+input[type='text']:focus-within {
+  outline: var(--color-primary-tint) solid 1px;
 }
 
 #latest {
@@ -446,14 +486,6 @@ input[type='text']:focus-visible {
 }
 
 /* qr code */
-
-.qr-code-container {
-  max-width: 260px;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
 
 /* sidebar on mobile */
 

@@ -34,7 +34,9 @@ select {
   color: inherit;
 }
 
-button {
+button,
+a {
+  all: unset;
   cursor: pointer;
 }
 
@@ -48,6 +50,8 @@ h6 {
   overflow-wrap: break-word;
 }
 
-p {
-  margin-block: 1rem;
+ul {
+  list-style: none;
+  margin-inline: 0;
+  padding-inline: 0;
 }

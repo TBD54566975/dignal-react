@@ -1,0 +1,13 @@
+.qrCodeContainer {
+  max-width: 220px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  & .qrCode {
+    padding: 2rem;
+    border-radius: 2rem;
+    background-color: white;
+  }
+}

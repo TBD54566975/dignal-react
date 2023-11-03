@@ -1,41 +1,70 @@
 import { useEffect, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router';
-import { connectWeb5, getWeb5Route } from '@/util/web5';
-import { setInitialTheme } from './theme';
-import { useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router';
+import { setInitialTheme } from '../theme';
+import Loading from '@/components/Loading';
+import { setUpWeb5User } from '@/util/profile';
+import { useNavigate } from 'react-router-dom';
+import { RoutePaths } from '@/util/routes';
+import Sidebar from '@/components/Sidebar';
+import { ChatContext, ChatContextValue, hydrateChatList } from '@/util/chat';
 
 setInitialTheme();
 
-function App() {
-  return <LoadingHandler />;
-}
-
-export default App;
-
-function LoadingHandler() {
+export default function App() {
   const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
   const navigate = useNavigate();
-  const { search } = useLocation();
+  const [chats, setChats] = useState<ChatContextValue | undefined>();
 
   useEffect(() => {
-    async function activateWeb5AndRouteUser() {
-      await connectWeb5();
-      const route = await getWeb5Route();
-      setIsLoading(false);
-      route && navigate(route + search);
+    let pollForNewChats: NodeJS.Timeout;
+
+    async function setChatList() {
+      const chatList = await hydrateChatList();
+      chatList &&
+        setChats(
+          Object.fromEntries(chatList.map(chat => [chat.contextId, chat])),
+        );
     }
-    void activateWeb5AndRouteUser();
-  }, [navigate, search]);
 
-  return <>{isLoading ? <LoadingSpinner /> : <Outlet />}</>;
-}
+    async function setupWeb5AndChatList() {
+      try {
+        // const { records } = await getChatContextThreadRecords(thread.record.id)
+        await setUpWeb5User();
+        await setChatList();
 
-function LoadingSpinner() {
-  return (
-    <div className="layout">
-      <div className="row text-center justify-center m-auto row-px">
-        loading...
-      </div>
+        setIsLoading(false);
+        pollForNewChats = setInterval(async () => {
+          await setChatList();
+        }, 5000);
+        if (location.pathname === RoutePaths.ROOT) {
+          navigate(RoutePaths.CHAT);
+        }
+      } catch (e) {
+        console.error(e);
+        setIsError(true);
+      }
+    }
+    void setupWeb5AndChatList();
+
+    return () => clearInterval(pollForNewChats);
+  }, [navigate]);
+
+  if (isError) {
+    throw new Error(
+      'There was a problem setting up your chat profile. Please try again later.',
+    );
+  }
+  return isLoading ? (
+    <Loading />
+  ) : (
+    <div className="sidebar-layout">
+      <Sidebar />
+      <Outlet
+        context={{
+          chats: [chats, setChats] satisfies ChatContext,
+        }}
+      />
     </div>
   );
 }

@@ -19,7 +19,7 @@ export async function resetIndexedDb() {
   location.reload();
 }
 
-export function convertTime(time: string) {
+export function formatTime(time: string) {
   const now = new Date();
   const inputTime = new Date(time);
   const timeDifference = now.getTime() - inputTime.getTime();
@@ -27,9 +27,11 @@ export function convertTime(time: string) {
   const oneWeek = 7 * oneDay;
 
   if (timeDifference < oneDay && inputTime.getDate() === now.getDate()) {
-    const formattedTime = `${inputTime.getHours()}:${String(
-      inputTime.getMinutes(),
-    ).padStart(2, '0')}`;
+    const formattedTime = `${
+      inputTime.getHours() > 12
+        ? inputTime.getHours() - 12
+        : inputTime.getHours()
+    }:${String(inputTime.getMinutes()).padStart(2, '0')}`;
     const period = inputTime.getHours() >= 12 ? 'pm' : 'am';
     return `${formattedTime} ${period}`;
   } else if (timeDifference < 2 * oneDay) {
@@ -53,8 +55,16 @@ export function convertTime(time: string) {
   }
 }
 
+export async function convertUrlToBlob(url: string) {
+  return await (await fetch(url)).blob();
+}
+
+export async function convertFileToBlob(file: File) {
+  return new Blob([file]);
+}
+
 export function convertBlobToUrl(blob: Blob) {
-  return blob && URL.createObjectURL(blob);
+  return URL.createObjectURL(blob);
 }
 
 export function copyToClipboard(text: string) {

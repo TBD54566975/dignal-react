@@ -1,0 +1,11 @@
+.formContainer {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem auto auto;
+  width: 100%;
+  max-width: 768px;
+
+  & .formField {
+    flex: 1;
+  }
+}

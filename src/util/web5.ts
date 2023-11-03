@@ -6,46 +6,21 @@ import {
   type RecordsQueryResponse,
   type RecordsReadResponse,
   type RecordsReadRequest,
-  type RecordsDeleteRequest,
   type RecordsDeleteResponse,
-  type ProtocolsQueryRequest,
   type ProtocolsQueryResponse,
   type ProtocolsConfigureResponse,
   type ProtocolsConfigureRequest,
 } from '@web5/api/browser';
-import { ChatProtocol } from './protocols/chat.protocol';
-import { RoutePaths } from '../routes';
+
+export type QueryDateSort = RecordsQueryRequest['message']['dateSort'];
 
 export let web5: Web5;
 export let userDid: string;
 
 export async function connectWeb5() {
-  const web5Connect = await Web5.connect({
+  ({ web5, did: userDid } = await Web5.connect({
     sync: '5s',
-  });
-  [web5, userDid] = [web5Connect.web5, web5Connect.did];
-  return web5Connect;
-}
-
-export async function getWeb5Route() {
-  const { protocols } = await queryProtocols({
-    message: {
-      filter: {
-        protocol: ChatProtocol.protocol,
-      },
-    },
-  });
-  let route;
-  if (protocols?.length) {
-    if (!location.pathname.includes(RoutePaths.CHAT)) {
-      route = RoutePaths.CHAT;
-    }
-  } else {
-    if (!location.pathname.includes(RoutePaths.ONBOARDING)) {
-      route = RoutePaths.ONBOARDING;
-    }
-  }
-  return route;
+  }));
 }
 
 export async function writeRecord(
@@ -60,33 +35,69 @@ export async function queryRecords(
   return web5.dwn.records.query(queryRequest);
 }
 
-export async function readRecord(
-  readRequest: RecordsReadRequest,
-): Promise<RecordsReadResponse> {
-  return web5.dwn.records.read(readRequest);
+export async function readRecord({
+  from,
+  filter,
+}: {
+  from?: string;
+  filter: RecordsReadRequest['message']['filter'];
+}): Promise<RecordsReadResponse> {
+  return web5.dwn.records.read({
+    ...(from && { from }),
+    message: {
+      filter,
+    },
+  });
 }
 
-export async function deleteRecord(
-  deleteRequest: RecordsDeleteRequest,
-): Promise<RecordsDeleteResponse> {
-  return web5.dwn.records.delete(deleteRequest);
+export async function deleteRecord({
+  from,
+  recordId,
+}: {
+  from?: string;
+  recordId: string;
+}): Promise<RecordsDeleteResponse> {
+  return web5.dwn.records.delete({
+    ...(from && { from }),
+    message: {
+      recordId,
+    },
+  });
 }
 
 export async function configureProtocol(
-  configureRequest: ProtocolsConfigureRequest,
+  definition: ProtocolsConfigureRequest['message']['definition'],
 ): Promise<ProtocolsConfigureResponse> {
-  return web5.dwn.protocols.configure(configureRequest);
+  return web5.dwn.protocols.configure({
+    message: {
+      definition,
+    },
+  });
 }
 
 export async function queryProtocols(
-  queryRequest: ProtocolsQueryRequest,
+  protocol: string,
 ): Promise<ProtocolsQueryResponse> {
-  return web5.dwn.protocols.query(queryRequest);
+  return web5.dwn.protocols.query({
+    message: {
+      filter: {
+        protocol,
+      },
+    },
+  });
 }
 
-export const QueryDateSort = {
-  createdAscending:
-    'createdAscending' as RecordsQueryRequest['message']['dateSort'],
-  createdDescending:
-    'createdDescending' as RecordsQueryRequest['message']['dateSort'],
-};
+export async function queryForAndSetProtocol(
+  definition: ProtocolsConfigureRequest['message']['definition'],
+) {
+  const { protocols, status } = await queryProtocols(definition.protocol);
+  if (protocols.length) {
+    return { protocols, status };
+  } else {
+    const { protocol, status } = await configureProtocol(definition);
+    if (protocol) {
+      await protocol.send(userDid);
+    }
+    return { protocol, status };
+  }
+}
