@@ -23,7 +23,6 @@ export async function setUpWeb5User() {
   return Promise.all([
     queryForAndSetProtocol(ChatsProtocol),
     queryForAndSetProtocol(ProfilesProtocol),
-    checkForAndSetProfile(),
   ]);
 }
 
@@ -37,17 +36,21 @@ export async function checkForAndSetProfile() {
 }
 
 export async function setWeb5UserStarterProfile() {
-  return await createFullUserProfile({
+  const responses = await createFullUserProfile({
     label: 'My first profile',
     ...sampleProfile,
   });
+  for (const response of Object.values(responses)) {
+    await response?.record?.send(userDid);
+  }
+  return responses;
 }
 
 export async function createFullUserProfile({
   label,
   name,
   icon,
-  icon_alt,
+  iconAlt,
 }: IProfile) {
   const profileResponse = await createUserProfileContext();
   const profileLabelResponse =
@@ -71,7 +74,7 @@ export async function createFullUserProfile({
   const profileIconAltTextResponse =
     profileIconResponse &&
     profileIconResponse.record &&
-    (await addProfileIconAltText(icon_alt, {
+    (await addProfileIconAltText(iconAlt, {
       contextId: profileIconResponse.record.contextId,
       parentId: profileIconResponse.record.id,
     }));
@@ -80,12 +83,12 @@ export async function createFullUserProfile({
     label: profileLabelResponse,
     name: profileNameResponse,
     icon: profileIconResponse,
-    icon_alt: profileIconAltTextResponse,
+    iconAlt: profileIconAltTextResponse,
   };
 }
 
 export async function createUserProfileContext() {
-  const { record, status } = await writeRecord({
+  return await writeRecord({
     data: {},
     message: {
       protocol: ProfilesProtocol.protocol,
@@ -94,17 +97,13 @@ export async function createUserProfileContext() {
       published: true,
     },
   });
-  if (record) {
-    await record.send(userDid);
-  }
-  return { record, status };
 }
 
 export async function addProfileLabel(
   label: string,
   { contextId, parentId }: RelatedRecord,
 ) {
-  const { record, status } = await writeRecord({
+  return await writeRecord({
     data: label,
     message: {
       protocol: ProfilesProtocol.protocol,
@@ -115,17 +114,13 @@ export async function addProfileLabel(
       published: true,
     },
   });
-  if (record) {
-    await record.send(userDid);
-  }
-  return { record, status };
 }
 
 export async function addProfileName(
   name: string,
   { contextId, parentId }: RelatedRecord,
 ) {
-  const { record, status } = await writeRecord({
+  return await writeRecord({
     data: name,
     message: {
       protocol: ProfilesProtocol.protocol,
@@ -136,17 +131,13 @@ export async function addProfileName(
       published: true,
     },
   });
-  if (record) {
-    await record.send(userDid);
-  }
-  return { record, status };
 }
 
 export async function addProfileIcon(
   icon: Blob,
   { contextId, parentId }: RelatedRecord,
 ) {
-  const { record, status } = await writeRecord({
+  return await writeRecord({
     data: icon,
     message: {
       protocol: ProfilesProtocol.protocol,
@@ -157,31 +148,23 @@ export async function addProfileIcon(
       published: true,
     },
   });
-  if (record) {
-    await record.send(userDid);
-  }
-  return { record, status };
 }
 
 export async function addProfileIconAltText(
   altText: string,
   { contextId, parentId }: RelatedRecord,
 ) {
-  const { record, status } = await writeRecord({
+  return await writeRecord({
     data: altText,
     message: {
       protocol: ProfilesProtocol.protocol,
-      protocolPath: 'profile/icon/icon_alt',
-      schema: 'icon_alt',
+      protocolPath: 'profile/icon/iconAlt',
+      schema: 'iconAlt',
       contextId,
       parentId,
       published: true,
     },
   });
-  if (record) {
-    await record.send(userDid);
-  }
-  return { record, status };
 }
 
 export async function getFullUserProfileWithFallbacks(from?: string) {
@@ -189,7 +172,7 @@ export async function getFullUserProfileWithFallbacks(from?: string) {
     label: await getUserProfileLabelWithFallback(from),
     name: await getUserProfileNameWithFallback(from),
     icon: await getUserProfileIconWithFallback(from),
-    icon_alt: await getUserProfileIconAltWithFallback(from),
+    iconAlt: await getUserProfileIconAltWithFallback(from),
   };
 }
 
@@ -234,7 +217,7 @@ export async function getUserProfileIconAlt(from?: string) {
   return await readRecord({
     ...(from && { from }),
     filter: {
-      protocolPath: 'profile/icon/icon_alt',
+      protocolPath: 'profile/icon/iconAlt',
     },
   });
 }

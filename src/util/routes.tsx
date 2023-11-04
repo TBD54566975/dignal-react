@@ -8,10 +8,9 @@ import ChatId from '@/routes/chat/ChatId.tsx';
 export const enum RoutePaths {
   ROOT = '/',
   CHAT = '/chat',
-  INVITE = '/invite',
   PROFILES = '/profiles',
   IMPORT = '/profiles/import',
-  REQUESTS = '/#requests',
+  HANDLE_REQUESTS = '/#requests',
   // CONTACTS = '/contacts', // not yet mocked
 }
 
@@ -35,10 +34,6 @@ export const routes: RouteObject[] = [
         ],
       },
       {
-        path: `${RoutePaths.INVITE}/:contextId`,
-        element: <div>Invite detail</div>,
-      },
-      {
         path: RoutePaths.PROFILES,
         children: [
           {
@@ -56,7 +51,7 @@ export const routes: RouteObject[] = [
         ],
       },
       {
-        path: RoutePaths.REQUESTS,
+        path: RoutePaths.HANDLE_REQUESTS,
         element: <div>Requests view</div>,
       },
     ],

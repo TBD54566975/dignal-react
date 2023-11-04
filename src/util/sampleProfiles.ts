@@ -9,28 +9,28 @@ const sampleDisplayProfiles: IPublicProfile[] = [
   {
     name: 'Bella Bat',
     icon: Bat,
-    icon_alt: 'A purple bat with extended wings in watercolor',
+    iconAlt: 'A purple bat with extended wings in watercolor',
   },
   {
     name: 'Cory Cow',
     icon: Cow,
-    icon_alt: 'A closeup of a smiling white and brown cow in watercolor',
+    iconAlt: 'A closeup of a smiling white and brown cow in watercolor',
   },
   {
     name: 'Daisy Dolphin',
     icon: Dolphin,
-    icon_alt:
+    iconAlt:
       'A shot of a smiling blue dolphin from the neck up with fins extended in watercolor',
   },
   {
     name: 'Eli Elephant',
     icon: Elephant,
-    icon_alt: 'A closeup of a grey elephant with white tusks in watercolor',
+    iconAlt: 'A closeup of a grey elephant with white tusks in watercolor',
   },
   {
     name: 'Fiona Fox',
     icon: Fox,
-    icon_alt:
+    iconAlt:
       'A brown and red fox with white tips on their face and ears in watercolor',
   },
 ];

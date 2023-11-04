@@ -1,8 +1,0 @@
-dialog {
-  border: none;
-  border-radius: 2rem;
-  margin: auto;
-  padding-block-start: 2rem;
-  width: calc(100% - 2rem);
-  max-width: 768px;
-}

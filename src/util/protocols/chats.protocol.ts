@@ -3,11 +3,10 @@ export const ChatsProtocol = {
   "protocol": "tbd/protocols/chats/v1",
   "published": true,
   "types": {
-    "chat": {
-      "schema": "chat",
-      "dataFormats": ["application/json"]
-      // { participants: string[]; type: "private" | "group";  } // you create it with your did, they request, you respond by adding their did and then sending the record
-      // if group: groupFallback; else if participants.length > 1: getProfile ; else privateFallback
+    "chat": {},
+    "metadata": {
+      "schema": "metadata",
+      "dataFormats": ["application/json"]// { participants: string[]; type: "private" | "group";  }
     },
     "thread": {},
     "message": {
@@ -28,13 +27,9 @@ export const ChatsProtocol = {
     "reaction": {
       "dataFormats": ["text/plain"]
     },
-    "invite": {
-      "dataFormats": ["text/plain"] // the contextId of the chat room
-    },
+    "invite": {},
     "request": {
-      "schema": "request",
-      "dataFormats": ["application/json"]
-      // { contextId: string; requestedFrom: string } // can respond by reading record by contextId, updating it, and sending it to requestingDid
+      "dataFormats": ["text/plain"]
     }
   },
   "structure": {
@@ -45,16 +40,34 @@ export const ChatsProtocol = {
           "can": "write"
         },
         {
-          "who": "author",
-          "of": "chat",
+          "who": "anyone",
           "can": "read"
         },
-        {
-          "who": "recipient",
-          "of": "chat",
-          "can": "read"
-        }
       ],
+      "metadata": {
+        "$actions": [
+          {
+            "who": "author",
+            "of": "chat",
+            "can": "write"
+          },
+          {
+            "who": "recipient",
+            "of": "chat",
+            "can": "write"
+          },
+          {
+            "who": "author",
+            "of": "chat/metadata",
+            "can": "read"
+          },
+          {
+            "who": "recipient",
+            "of": "chat/metadata",
+            "can": "read"
+          }
+        ],
+      },
       "thread": {
         "$actions": [
           {
@@ -438,19 +451,20 @@ export const ChatsProtocol = {
             }
           },
         }
-      }
-    },
-    "invite": {
-      "$actions": [
-        {
-          "who": "anyone",
-          "can": "write"
-        },
-        {
-          "who": "anyone",
-          "can": "read",
-        },
-      ]
+      },
+      "invite": {
+        "$actions": [
+          {
+            "who": "author",
+            "of": "chat",
+            "can": "write"
+          },
+          {
+            "who": "anyone",
+            "can": "read",
+          },
+        ]
+      },
     },
     "request": {
       "$actions": [

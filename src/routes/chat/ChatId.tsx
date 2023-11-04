@@ -10,12 +10,13 @@ import {
 } from '@/util/chat';
 import { RoutePaths } from '@/util/routes';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import styles from './ChatId.module.css';
 import ChatInputBar from '@/components/ChatInputBar';
 
 export default function ChatId() {
   const params = useParams();
+  const navigate = useNavigate();
   const [chats] = useChatContext();
   const [messageList, setMessageList] = useState<ChatRecordDisplayProps>([]);
   const [messageCount, setMessageCount] = useState(0);
@@ -52,18 +53,20 @@ export default function ChatId() {
               return transformDwnRecordToChatRecord(
                 record,
                 senderProfile?.icon,
-                senderProfile?.icon_alt,
+                senderProfile?.iconAlt,
               );
             }),
           );
           setMessageList(await data);
           setMessageCount(chatParentContext.records.length);
         }
+      } else {
+        navigate(RoutePaths.CHAT);
       }
     }
 
     void hydrateChatEntries();
-  }, [chatParentContext, messageLengthAtPar]);
+  }, [chatParentContext, messageLengthAtPar, navigate]);
 
   return (
     chatParentContext && (
@@ -71,7 +74,7 @@ export default function ChatId() {
         <HeaderWithBackButton
           title={chatParentContext.name}
           icon={chatParentContext.icon}
-          icon_alt={chatParentContext.icon_alt}
+          iconAlt={chatParentContext.iconAlt}
         />
         <main>
           <div className="scroll-area">
@@ -84,14 +87,15 @@ export default function ChatId() {
                     : ' friends '}
                   to join with this link:
                 </h2>
-                <QrCode
-                  dataToEmbed={
-                    location.origin +
-                    RoutePaths.INVITE +
-                    '/' +
-                    constructChatInviteUrl(chatParentContext.contextId)
-                  }
-                />
+                {chatParentContext.inviteRecordId && (
+                  <QrCode
+                    dataToEmbed={
+                      location.origin +
+                      RoutePaths.ROOT +
+                      constructChatInviteUrl(chatParentContext.inviteRecordId)
+                    }
+                  />
+                )}
               </div>
               <ul className={styles.messageList}>
                 {messageList.map((messageListItem, index) => (

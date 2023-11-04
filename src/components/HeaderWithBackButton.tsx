@@ -6,12 +6,12 @@ import styles from './HeaderWithBackButton.module.css';
 export function HeaderWithBackButton({
   title,
   icon,
-  icon_alt,
+  iconAlt,
   buttons,
 }: {
   title: string;
   icon?: string;
-  icon_alt?: string;
+  iconAlt?: string;
   buttons?: ReactNode[];
 }) {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ export function HeaderWithBackButton({
       </button>
       <div className={styles.headerDisplay}>
         <div className={styles.heading}>
-          {icon && <img src={icon} alt={icon_alt} />}
+          {icon && <img src={icon} alt={iconAlt} />}
           <h1>{title}</h1>
         </div>
         <div className={styles.buttons}>

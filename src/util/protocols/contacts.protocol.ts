@@ -21,7 +21,7 @@ export const ContactsProtocol = {
         "image/webp"
       ]
     },
-    "icon_alt": {
+    "iconAlt": {
       "dataFormats": ["text/plain"] // the alt text of the contact icon
     }
   },
@@ -113,7 +113,7 @@ export const ContactsProtocol = {
               "can": "read"
             }
           ],
-          "icon_alt": {
+          "iconAlt": {
             "$actions": [
               {
                 "who": "author",
@@ -127,12 +127,12 @@ export const ContactsProtocol = {
               },
               {
                 "who": "author",
-                "of": "directory/contact/icon/icon_alt",
+                "of": "directory/contact/icon/iconAlt",
                 "can": "read"
               },
               {
                 "who": "recipient",
-                "of": "directory/contact/icon/icon_alt",
+                "of": "directory/contact/icon/iconAlt",
                 "can": "read"
               }
             ]

@@ -19,7 +19,7 @@ export const ProfilesProtocol = {
         "image/webp"
       ]
     },
-    "icon_alt": {
+    "iconAlt": {
       "dataFormats": ["text/plain"]
     }
   },
@@ -74,7 +74,7 @@ export const ProfilesProtocol = {
             "can": "read"
           }
         ],
-        "icon_alt": {
+        "iconAlt": {
           "$actions": [
             {
               "who": "author",

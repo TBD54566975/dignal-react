@@ -2,13 +2,21 @@ import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router';
 import { setInitialTheme } from '../theme';
 import Loading from '@/components/Loading';
-import { setUpWeb5User } from '@/util/profile';
+import { checkForAndSetProfile, setUpWeb5User } from '@/util/profile';
 import { useNavigate } from 'react-router-dom';
 import { RoutePaths } from '@/util/routes';
 import Sidebar from '@/components/Sidebar';
-import { ChatContext, ChatContextValue, hydrateChatList } from '@/util/chat';
+import {
+  ChatContext,
+  ChatContextValue,
+  parseChatInviteUrl,
+  setChatList,
+} from '@/util/chat';
+import RequestModal from '@/components/RequestModal';
 
 setInitialTheme();
+
+const requestParams = parseChatInviteUrl(location.search);
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -17,28 +25,20 @@ export default function App() {
   const [chats, setChats] = useState<ChatContextValue | undefined>();
 
   useEffect(() => {
-    let pollForNewChats: NodeJS.Timeout;
-
-    async function setChatList() {
-      const chatList = await hydrateChatList();
-      chatList &&
-        setChats(
-          Object.fromEntries(chatList.map(chat => [chat.contextId, chat])),
-        );
-    }
-
     async function setupWeb5AndChatList() {
       try {
-        // const { records } = await getChatContextThreadRecords(thread.record.id)
         await setUpWeb5User();
-        await setChatList();
+        await checkForAndSetProfile();
 
+        setChats(await setChatList());
         setIsLoading(false);
-        pollForNewChats = setInterval(async () => {
-          await setChatList();
-        }, 5000);
+
         if (location.pathname === RoutePaths.ROOT) {
-          navigate(RoutePaths.CHAT);
+          navigate({
+            pathname: RoutePaths.CHAT,
+            search: location.search,
+            hash: location.hash,
+          });
         }
       } catch (e) {
         console.error(e);
@@ -46,8 +46,6 @@ export default function App() {
       }
     }
     void setupWeb5AndChatList();
-
-    return () => clearInterval(pollForNewChats);
   }, [navigate]);
 
   if (isError) {
@@ -59,6 +57,10 @@ export default function App() {
     <Loading />
   ) : (
     <div className="sidebar-layout">
+      {requestParams && (
+        <RequestModal isLoading={isLoading} requestParams={requestParams} />
+      )}
+
       <Sidebar />
       <Outlet
         context={{

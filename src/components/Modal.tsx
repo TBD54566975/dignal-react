@@ -1,5 +1,4 @@
 import { ReactNode, RefObject } from 'react';
-import './modal.css';
 
 export default function Modal({
   title,

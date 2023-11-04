@@ -26,7 +26,7 @@ export type IChatRecord = {
 export type IPublicProfile = {
   name: string;
   icon: string;
-  icon_alt: string;
+  iconAlt: string;
 };
 
 export type IProfile = IPublicProfile & {
