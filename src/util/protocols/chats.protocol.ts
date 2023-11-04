@@ -460,7 +460,8 @@ export const ChatsProtocol = {
             "can": "write"
           },
           {
-            "who": "anyone",
+            "who": "author",
+            "of": "chat",
             "can": "read",
           },
         ]

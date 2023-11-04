@@ -96,6 +96,18 @@ export async function createNewChatInviteContextId({
   });
 }
 
+export async function createChatRequestToSend(inviteRecordId: string) {
+  return await writeRecord({
+    data: inviteRecordId,
+    message: {
+      protocol: ChatsProtocol.protocol,
+      protocolPath: 'request',
+      schema: 'request',
+      recipient: userDid,
+    },
+  });
+}
+
 export async function createNewChatThread({
   parent,
 }: {
@@ -210,6 +222,18 @@ export async function getChatInviteByContextId({
     filter: {
       protocolPath: 'chat/invite',
       contextId,
+    },
+  });
+}
+
+export async function getAllChatRequests() {
+  return await queryRecords({
+    message: {
+      filter: {
+        protocol: ChatsProtocol.protocol,
+        protocolPath: 'request',
+        schema: 'request',
+      },
     },
   });
 }
@@ -395,4 +419,30 @@ export async function sendRecordToParticipants(
   for (const participant of participants) {
     await record.send(participant);
   }
+}
+
+export async function getSendRequestError({
+  recordId,
+  did,
+}: {
+  recordId: string;
+  did: string;
+}) {
+  if (matchUserDidToTargetDid(did)) {
+    return "You can't request access from yourself.";
+  }
+  const { record: inviteRecord, status } = await getChatInviteByRecordId({
+    recordId,
+    from: did,
+  });
+  console.log(inviteRecord, status);
+  if (inviteRecord) {
+    const { record: chatContextRecord } = await getChatContext(
+      inviteRecord.contextId,
+    );
+    if (chatContextRecord) {
+      return 'You already have this chat.';
+    }
+  }
+  return 'This invite no longer exists.';
 }
