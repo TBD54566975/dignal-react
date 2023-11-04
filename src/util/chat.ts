@@ -131,30 +131,10 @@ export async function getAllChatContexts() {
   });
 }
 
-export async function getAllChatsLatestEntries() {
-  return await queryRecords({
-    message: {
-      filter: {
-        protocolPath: 'chat/latest',
-      },
-      dateSort: 'createdDescending' as QueryDateSort,
-    },
-  });
-}
-
 export async function getChatContext(contextId: string) {
   return await readRecord({
     filter: {
       protocolPath: 'chat',
-      contextId,
-    },
-  });
-}
-
-export async function getChatContextLatestEntry(contextId: string) {
-  return await readRecord({
-    filter: {
-      protocolPath: 'chat/latest',
       contextId,
     },
   });
@@ -183,7 +163,6 @@ export async function getChatContextThreadRecords(parentId: string) {
 export async function transformChatContextToChatListEntry(
   record: Pick<Record, 'id' | 'contextId' | 'data' | 'dateModified'>,
 ) {
-  const latest = await getChatContextLatestEntry(record.contextId);
   const data = await record.data.json();
   const externalParticipants = data.participants.filter(
     (did: string) => did !== userDid,
@@ -197,7 +176,7 @@ export async function transformChatContextToChatListEntry(
 
   const thread = await getChatContextThread(record.contextId);
   const { records } = await getChatContextThreadRecords(thread.record.id);
-
+  const mostRecentChatContextThreadRecord = records?.[records.length - 1];
   const profiles = new Map();
   for (const participant of data.participants) {
     profiles.set(
@@ -214,8 +193,10 @@ export async function transformChatContextToChatListEntry(
     icon,
     icon_alt,
     name,
-    latest: (await latest.record?.data.text()) ?? 'No messages',
-    timestamp: latest.record?.dateModified ?? record.dateModified,
+    latest:
+      (await mostRecentChatContextThreadRecord?.data.text()) ?? 'No messages',
+    timestamp:
+      mostRecentChatContextThreadRecord?.dateModified ?? record.dateModified,
     thread: thread.record,
     records,
     profiles,

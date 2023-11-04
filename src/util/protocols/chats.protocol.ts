@@ -9,9 +9,6 @@ export const ChatsProtocol = {
       // { participants: string[]; type: "private" | "group";  } // you create it with your did, they request, you respond by adding their did and then sending the record
       // if group: groupFallback; else if participants.length > 1: getProfile ; else privateFallback
     },
-    "latest": {
-      "dataFormats": ["text/plain"] // if type is attachment, fallback would say "attachment"
-    },
     "thread": {},
     "message": {
       "dataFormats": ["text/plain"]
@@ -58,25 +55,6 @@ export const ChatsProtocol = {
           "can": "read"
         }
       ],
-      "latest": {
-        "$actions": [
-          {
-            "who": "author",
-            "of": "chat",
-            "can": "write"
-          },
-          {
-            "who": "recipient",
-            "of": "chat",
-            "can": "write"
-          },
-          {
-            "who": "author",
-            "of": "chat/latest",
-            "can": "read"
-          }
-        ]
-      }, //either update or replace? ie delete and write
       "thread": {
         "$actions": [
           {

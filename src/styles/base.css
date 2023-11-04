@@ -396,10 +396,6 @@ input[type='text']:focus-within {
   outline: var(--color-primary-tint) solid 1px;
 }
 
-#latest {
-  overflow-anchor: auto;
-}
-
 .did-row {
   line-break: anywhere;
   overflow-y: scroll;
