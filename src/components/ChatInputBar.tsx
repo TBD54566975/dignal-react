@@ -46,6 +46,7 @@ export default function ChatInputField({
               [contextId]: {
                 ...chats[contextId],
                 records: currentRecords,
+                latest: formData.message ?? 'Empty message',
               },
             };
           });
