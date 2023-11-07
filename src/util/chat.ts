@@ -304,52 +304,55 @@ export async function transformChatContextToChatListEntry(
   record: Pick<Record, 'id' | 'contextId' | 'data' | 'dateModified'>,
   requestList?: { request: Record; name: string }[],
 ) {
-  const metadata = await getChatMetadata(record.contextId);
-  const data = await metadata.record.data.json();
+  const { record: metadata } = await getChatMetadata(record.contextId);
+  if (metadata) {
+    const data = await metadata.data.json();
 
-  const externalParticipants = data.participants.filter(
-    (did: string) => did !== userDid,
-  );
-  const [name, icon, iconAlt] = await getProfileNameIconAndIconAltForDisplay({
-    type: data.type,
-    ...(externalParticipants === 1 && {
-      participant: externalParticipants[0],
-    }),
-  });
-
-  const invite = await getChatInviteByContextId({
-    contextId: record.contextId,
-  });
-  const thread = await getChatContextThread(record.contextId);
-  const { records } = await getChatContextThreadRecords(thread.record.id);
-  const mostRecentChatContextThreadRecord = records?.[records.length - 1];
-
-  const profiles = new Map();
-  for (const participant of data.participants) {
-    profiles.set(
-      participant,
-      await getFullUserProfileWithFallbacks(
-        matchUserDidToTargetDid(participant) ? undefined : participant,
-      ),
+    const externalParticipants = data.participants.filter(
+      (did: string) => did !== userDid,
     );
+    const [name, icon, iconAlt] = await getProfileNameIconAndIconAltForDisplay({
+      type: data.type,
+      ...(externalParticipants === 1 && {
+        participant: externalParticipants[0],
+      }),
+    });
+
+    const invite = await getChatInviteByContextId({
+      contextId: record.contextId,
+    });
+    const thread = await getChatContextThread(record.contextId);
+    const { records } = await getChatContextThreadRecords(thread.record.id);
+    const mostRecentChatContextThreadRecord = records?.[records.length - 1];
+
+    const profiles = new Map();
+    for (const participant of data.participants) {
+      profiles.set(
+        participant,
+        await getFullUserProfileWithFallbacks(
+          matchUserDidToTargetDid(participant) ? undefined : participant,
+        ),
+      );
+    }
+    return {
+      participants: data.participants,
+      type: data.type,
+      contextId: record.contextId,
+      icon,
+      iconAlt,
+      name,
+      latest:
+        (await mostRecentChatContextThreadRecord?.data.text()) ?? 'No messages',
+      timestamp:
+        mostRecentChatContextThreadRecord?.dateModified ?? record.dateModified,
+      thread: thread.record,
+      records,
+      profiles,
+      ...(invite.record && { inviteRecordId: invite.record.id }),
+      ...(requestList && { requestList }),
+    };
   }
-  return {
-    participants: data.participants,
-    type: data.type,
-    contextId: record.contextId,
-    icon,
-    iconAlt,
-    name,
-    latest:
-      (await mostRecentChatContextThreadRecord?.data.text()) ?? 'No messages',
-    timestamp:
-      mostRecentChatContextThreadRecord?.dateModified ?? record.dateModified,
-    thread: thread.record,
-    records,
-    profiles,
-    ...(invite.record && { inviteRecordId: invite.record.id }),
-    ...(requestList && { requestList }),
-  };
+  return;
 }
 
 export async function hydrateChatList() {
@@ -391,7 +394,9 @@ export type ChatListContextItem = {
   inviteRecordId?: string;
   requestList?: { request: Record; name: string }[];
 };
-export type ChatContextValue = { [contextId: string]: ChatListContextItem };
+export type ChatContextValue = {
+  [contextId: string]: ChatListContextItem | undefined;
+};
 export type ChatContext = [
   ChatContextValue | undefined,
   React.Dispatch<React.SetStateAction<ChatContextValue | undefined>>,
@@ -400,7 +405,8 @@ export type ChatContext = [
 export async function setChatList() {
   const chatList = await hydrateChatList();
   return (
-    chatList && Object.fromEntries(chatList.map(chat => [chat.contextId, chat]))
+    chatList &&
+    Object.fromEntries(chatList.map(chat => [chat && chat.contextId, chat]))
   );
 }
 

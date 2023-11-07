@@ -100,6 +100,7 @@ export default function ChatId() {
                       RoutePaths.ROOT +
                       constructChatInviteUrl(chatParentContext.inviteRecordId)
                     }
+                    includeCopyButton
                   />
                 </div>
               )}
@@ -138,7 +139,7 @@ export default function ChatId() {
                 ))}
               </ul>
               <button
-                className="btn primary"
+                className="btn"
                 onClick={async () => {
                   chatParentContext.inviteRecordId &&
                     (await createNewRequestToEnterChat(

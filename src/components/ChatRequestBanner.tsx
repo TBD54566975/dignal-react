@@ -28,7 +28,7 @@ export default function ChatRequestBanner({
                 {requestingParticipant.name} would like to join this chat.
                 <div className={styles.requestButtons}>
                   <button
-                    className="btn primary"
+                    className="btn"
                     onClick={async () => {
                       const result = await approveRequestToEnterChat({
                         request: requestingParticipant.request,

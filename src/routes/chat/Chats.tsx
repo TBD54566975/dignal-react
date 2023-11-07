@@ -29,33 +29,44 @@ export default function Chats() {
         };
       });
       navigate(RoutePaths.CHAT + '/' + newChat.contextId);
-      sendRecordToParticipants(newChat, newChatListEntry.participants);
+      sendRecordToParticipants(
+        newChat,
+        newChatListEntry && newChatListEntry.participants,
+      );
     }
   }
 
   return (
     <div className="content header-treatment">
-      <Header title={'Chat'} />
+      <Header title={'Chats'} />
       <main>
         <div className="scroll-area">
           <ul className="scroll-content visually-hide-scrollbar">
             {chats &&
               Object.values(chats).map(chat => {
                 return (
-                  <li key={chat.contextId}>
-                    <Link to={chat.contextId} className="display-link">
-                      <span className="display-link-detail">
-                        <img src={chat.icon} alt={chat.iconAlt} />
-                        <span>
-                          <h2>{chat.name}</h2>
-                          <p>{chat.latest}</p>
+                  chat && (
+                    <li key={chat.contextId}>
+                      <Link to={chat.contextId} className="display-link">
+                        <span className="display-link-detail">
+                          <div className="chatRecordIcon">
+                            <img
+                              width={48}
+                              src={chat.icon}
+                              alt={chat.iconAlt}
+                            />
+                          </div>
+                          <span>
+                            <h2>{chat.name}</h2>
+                            <p>{chat.latest}</p>
+                          </span>
                         </span>
-                      </span>
-                      <time dateTime={chat.timestamp}>
-                        {formatTime(chat.timestamp)}
-                      </time>
-                    </Link>
-                  </li>
+                        <time dateTime={chat.timestamp}>
+                          {formatTime(chat.timestamp)}
+                        </time>
+                      </Link>
+                    </li>
+                  )
                 );
               })}
           </ul>

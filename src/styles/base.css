@@ -420,6 +420,12 @@ dialog[open] {
 
 /* icon button */
 
+.chatRecordIcon {
+  flex: 0 0 auto;
+  height: 48px;
+  width: 48px;
+}
+
 .icon-button {
   padding: 0;
   width: auto;

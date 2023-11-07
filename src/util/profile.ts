@@ -3,6 +3,7 @@ import { ProfilesProtocol } from '@/util/protocols/profiles.protocol';
 import {
   connectWeb5,
   queryForAndSetProtocol,
+  queryRecords,
   readRecord,
   userDid,
   writeRecord,
@@ -12,6 +13,7 @@ import { IProfile } from './types';
 import { convertUrlToBlob, convertBlobToUrl } from './helpers';
 import SingleUser from '@assets/users/single-user.svg';
 import GroupUsers from '@assets/users/group-users.svg';
+import { useOutletContext } from 'react-router-dom';
 
 interface RelatedRecord {
   parentId: string;
@@ -26,12 +28,12 @@ export async function setUpWeb5User() {
   ]);
 }
 
-export async function checkForAndSetProfile() {
-  const { record: profileRecord, status } = await getUserProfileContext();
-  if (profileRecord) {
-    return { profileRecord, status };
+export async function checkForAndSetProfiles() {
+  const { records, status } = await getAllUserProfileContexts();
+  if (records) {
+    return { records, status };
   } else {
-    return await setWeb5UserStarterProfile();
+    return { records: [(await setWeb5UserStarterProfile()).record], status };
   }
 }
 
@@ -43,7 +45,7 @@ export async function setWeb5UserStarterProfile() {
   for (const response of Object.values(responses)) {
     await response?.record?.send(userDid);
   }
-  return responses;
+  return responses.profile;
 }
 
 export async function createFullUserProfile({
@@ -167,61 +169,81 @@ export async function addProfileIconAltText(
   });
 }
 
-export async function getFullUserProfileWithFallbacks(from?: string) {
+export async function getFullUserProfileWithFallbacks(
+  from?: string,
+  contextId?: string,
+) {
   return {
-    label: await getUserProfileLabelWithFallback(from),
-    name: await getUserProfileNameWithFallback(from),
-    icon: await getUserProfileIconWithFallback(from),
-    iconAlt: await getUserProfileIconAltWithFallback(from),
+    label: await getUserProfileLabelWithFallback(from, contextId),
+    name: await getUserProfileNameWithFallback(from, contextId),
+    icon: await getUserProfileIconWithFallback(from, contextId),
+    iconAlt: await getUserProfileIconAltWithFallback(from, contextId),
   };
 }
 
-export async function getUserProfileContext(from?: string) {
+export async function getAllUserProfileContexts(from?: string) {
+  return await queryRecords({
+    ...(from && { from }),
+    message: {
+      filter: {
+        protocol: ProfilesProtocol.protocol,
+        protocolPath: 'profile',
+      },
+    },
+  });
+}
+
+export async function getUserProfileContext(from?: string, contextId?: string) {
   return await readRecord({
     ...(from && { from }),
     filter: {
       protocol: ProfilesProtocol.protocol,
       protocolPath: 'profile',
+      ...(contextId && { contextId }),
     },
   });
 }
 
-export async function getUserProfileLabel(from?: string) {
+export async function getUserProfileLabel(from?: string, contextId?: string) {
   return await readRecord({
     ...(from && { from }),
     filter: {
       protocol: ProfilesProtocol.protocol,
       protocolPath: 'profile/label',
+      ...(contextId && { contextId }),
     },
   });
 }
 
-export async function getUserProfileName(from?: string) {
+export async function getUserProfileName(from?: string, contextId?: string) {
   return await readRecord({
     ...(from && { from }),
     filter: {
       protocol: ProfilesProtocol.protocol,
       protocolPath: 'profile/name',
+      ...(contextId && { contextId }),
     },
   });
 }
 
-export async function getUserProfileIcon(from?: string) {
+export async function getUserProfileIcon(from?: string, contextId?: string) {
   return await readRecord({
     ...(from && { from }),
     filter: {
       protocol: ProfilesProtocol.protocol,
       protocolPath: 'profile/icon',
+      ...(contextId && { contextId }),
     },
   });
 }
 
-export async function getUserProfileIconAlt(from?: string) {
+export async function getUserProfileIconAlt(from?: string, contextId?: string) {
   return await readRecord({
     ...(from && { from }),
     filter: {
       protocol: ProfilesProtocol.protocol,
       protocolPath: 'profile/icon/iconAlt',
+      ...(contextId && { contextId }),
     },
   });
 }
@@ -229,49 +251,108 @@ export async function getUserProfileIconAlt(from?: string) {
 export async function getProfileNameIconAndIconAltForDisplay({
   type,
   participant,
+  contextId,
 }: {
   type: 'private' | 'group';
   participant?: string;
+  contextId?: string;
 }) {
   return type === 'group'
     ? ['New group chat', GroupUsers, 'Group of user avatars']
     : participant
     ? [
-        await getUserProfileNameWithFallback(participant),
-        await getUserProfileIconWithFallback(participant),
-        await getUserProfileIconAltWithFallback(participant),
+        await getUserProfileNameWithFallback(participant, contextId),
+        await getUserProfileIconWithFallback(participant, contextId),
+        await getUserProfileIconAltWithFallback(participant, contextId),
       ]
     : ['New 1:1 chat', SingleUser, 'Single user avatar'];
 }
 
-export async function getUserProfileLabelWithFallback(participant?: string) {
-  const { record } = await getUserProfileLabel(participant);
+export async function getUserProfileLabelWithFallback(
+  participant?: string,
+  contextId?: string,
+): Promise<string> {
+  const { record } = await getUserProfileLabel(participant, contextId);
   if (record) {
     return record.data.text();
   }
-  return;
+  return '';
 }
 
-export async function getUserProfileNameWithFallback(participant?: string) {
-  const { record } = await getUserProfileName(participant);
+export async function getUserProfileNameWithFallback(
+  participant?: string,
+  contextId?: string,
+): Promise<string> {
+  const { record } = await getUserProfileName(participant, contextId);
   if (record) {
     return record.data.text();
   }
   return 'Unknown';
 }
 
-export async function getUserProfileIconWithFallback(participant?: string) {
-  const { record } = await getUserProfileIcon(participant);
+export async function getUserProfileIconWithFallback(
+  participant?: string,
+  contextId?: string,
+): Promise<string> {
+  const { record } = await getUserProfileIcon(participant, contextId);
   if (record) {
     return convertBlobToUrl(await record.data.blob());
   }
   return SingleUser;
 }
 
-export async function getUserProfileIconAltWithFallback(participant?: string) {
-  const { record } = await getUserProfileIconAlt(participant);
+export async function getUserProfileIconAltWithFallback(
+  participant?: string,
+  contextId?: string,
+): Promise<string> {
+  const { record } = await getUserProfileIconAlt(participant, contextId);
   if (record) {
     return record.data.text();
   }
   return 'Single user avatar';
+}
+
+export type ProfileListContextItem = {
+  label: string;
+  name: string;
+  icon: string;
+  iconAlt: string;
+  contextId: string;
+};
+export type ProfileContextValue = {
+  [contextId: string]: ProfileListContextItem | undefined;
+};
+export type ProfileContext = [
+  ProfileContextValue | undefined,
+  React.Dispatch<React.SetStateAction<ProfileContextValue | undefined>>,
+];
+export async function setProfileList() {
+  const profiles = await checkForAndSetProfiles();
+  if (profiles.records.length) {
+    const profileList = [];
+    for (const profile of profiles.records) {
+      if (profile) {
+        profileList.push({
+          contextId: profile.contextId,
+          ...(await getFullUserProfileWithFallbacks(
+            undefined,
+            profile.contextId,
+          )),
+        });
+      }
+    }
+    if (profileList.length) {
+      return (
+        profileList &&
+        Object.fromEntries(
+          profileList.map(profile => [profile && profile.contextId, profile]),
+        )
+      );
+    }
+  }
+}
+
+export function useProfileContext() {
+  const { profiles } = useOutletContext<{ profiles: ProfileContext }>();
+  return profiles;
 }

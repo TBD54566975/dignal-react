@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router';
 import { setInitialTheme } from '../theme';
 import Loading from '@/components/Loading';
-import { checkForAndSetProfile, setUpWeb5User } from '@/util/profile';
+import {
+  ProfileContext,
+  ProfileContextValue,
+  setProfileList,
+  setUpWeb5User,
+} from '@/util/profile';
 import { useNavigate } from 'react-router-dom';
 import { RoutePaths } from '@/util/routes';
 import Sidebar from '@/components/Sidebar';
@@ -23,15 +28,17 @@ export default function App() {
   const [isError, setIsError] = useState(false);
   const navigate = useNavigate();
   const [chats, setChats] = useState<ChatContextValue | undefined>();
+  const [profiles, setProfiles] = useState<ProfileContextValue | undefined>();
 
   useEffect(() => {
     let pollForNewChats: NodeJS.Timeout;
     async function setupWeb5AndChatList() {
       try {
         await setUpWeb5User();
-        await checkForAndSetProfile();
 
+        setProfiles(await setProfileList());
         setChats(await setChatList());
+
         pollForNewChats = setInterval(async () => {
           setChats(await setChatList());
         }, 5000);
@@ -70,6 +77,7 @@ export default function App() {
       <Outlet
         context={{
           chats: [chats, setChats] satisfies ChatContext,
+          profiles: [profiles, setProfiles] satisfies ProfileContext,
         }}
       />
     </div>
