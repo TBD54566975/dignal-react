@@ -560,3 +560,24 @@ export async function approveRequestToEnterChat({
 export async function declineRequestToEnterChat(request: Record) {
   return await request.delete();
 }
+
+export function updateChatParentContextAfterHandlingRequest(
+  chatParentContext: ChatListContextItem,
+  requestingParticipant: { request: Record; name: string },
+) {
+  if (
+    chatParentContext.requestList &&
+    chatParentContext.requestList.length < 2
+  ) {
+    delete chatParentContext.inviteRecordId;
+    delete chatParentContext.requestList;
+  } else {
+    chatParentContext.requestList =
+      chatParentContext.requestList &&
+      chatParentContext.requestList.filter(
+        requestItem =>
+          requestItem.request.id !== requestingParticipant.request.id,
+      );
+  }
+  return chatParentContext;
+}

@@ -1,0 +1,50 @@
+.requestArea {
+  background: var(--color-secondary);
+  border: 1px solid var(--color-secondary);
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-inline: 1rem;
+  position: sticky;
+  top: 0;
+
+  &[open] {
+    max-height: 240px;
+    overflow: scroll;
+
+    & summary {
+      & img {
+        transform: rotate(90deg);
+      }
+    }
+  }
+
+  & summary {
+    padding-block: 1rem;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+
+    &::marker {
+      content: '';
+    }
+  }
+
+  & .requestItem {
+    padding: 1rem;
+    background: var(--color-brand-white);
+    border-radius: 1rem;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+
+    & .requestButtons {
+      display: flex;
+      gap: 1rem;
+
+      & button {
+        margin: unset;
+        margin-block: 1rem;
+      }
+    }
+  }
+}

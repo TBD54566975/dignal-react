@@ -3,10 +3,8 @@ import { HeaderWithBackButton } from '@/components/HeaderWithBackButton';
 import QrCode from '@/components/QrCode';
 import {
   ChatRecordDisplayProps,
-  approveRequestToEnterChat,
   constructChatInviteUrl,
   createNewRequestToEnterChat,
-  declineRequestToEnterChat,
   matchRecordSchema,
   transformDwnRecordToChatRecord,
   useChatContext,
@@ -16,12 +14,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './ChatId.module.css';
 import ChatInputBar from '@/components/ChatInputBar';
-import RightChevron from '@assets/buttons/right-chevron.svg';
+import ChatRequestBanner from '@/components/ChatRequestBanner';
 
 export default function ChatId() {
   const params = useParams();
   const navigate = useNavigate();
-  const [chats, setChats] = useChatContext();
+  const [chats] = useChatContext();
   const [messageList, setMessageList] = useState<ChatRecordDisplayProps>([]);
   const [messageCount, setMessageCount] = useState(0);
 
@@ -76,99 +74,7 @@ export default function ChatId() {
     chatParentContext && (
       <div className="content">
         {chatParentContext.requestList && (
-          <details className={styles.requestArea}>
-            <summary>
-              Requests to enter the chat
-              <img src={RightChevron} alt="" />
-            </summary>
-            <ul>
-              {chatParentContext.requestList.map(requestingParticipant => (
-                <li key={requestingParticipant.request.id}>
-                  <div className={styles.requestItem}>
-                    {requestingParticipant.name} would like to join this chat.
-                    <div className={styles.requestButtons}>
-                      <button
-                        className="btn primary"
-                        onClick={async () => {
-                          const result = await approveRequestToEnterChat({
-                            request: requestingParticipant.request,
-                            inviteId: chatParentContext.inviteRecordId,
-                          });
-                          if (result.status.code === 202 && params.contextId) {
-                            const contextId = params.contextId;
-                            if (
-                              chatParentContext.requestList &&
-                              chatParentContext.requestList.length < 2
-                            ) {
-                              delete chatParentContext.inviteRecordId;
-                              delete chatParentContext.requestList;
-                            } else {
-                              chatParentContext.requestList =
-                                chatParentContext.requestList &&
-                                chatParentContext.requestList.filter(
-                                  requestItem =>
-                                    requestItem.request.id !==
-                                    requestingParticipant.request.id,
-                                );
-                            }
-                            setChats(prev => {
-                              return {
-                                ...prev,
-                                [contextId]: {
-                                  ...chatParentContext,
-                                },
-                              };
-                            });
-                          } else {
-                            alert('could not complete, try again');
-                          }
-                        }}
-                      >
-                        Allow
-                      </button>
-                      <button
-                        className="btn secondary"
-                        onClick={async () => {
-                          const result = await declineRequestToEnterChat(
-                            requestingParticipant.request,
-                          );
-                          if (result.status.code === 202 && params.contextId) {
-                            const contextId = params.contextId;
-                            if (
-                              chatParentContext.requestList &&
-                              chatParentContext.requestList.length < 2
-                            ) {
-                              delete chatParentContext.requestList;
-                            } else {
-                              chatParentContext.requestList =
-                                chatParentContext.requestList &&
-                                chatParentContext.requestList.filter(
-                                  requestItem =>
-                                    requestItem.request.id !==
-                                    requestingParticipant.request.id,
-                                );
-                            }
-                            setChats(prev => {
-                              return {
-                                ...prev,
-                                [contextId]: {
-                                  ...chatParentContext,
-                                },
-                              };
-                            });
-                          } else {
-                            alert('could not complete, try again');
-                          }
-                        }}
-                      >
-                        Deny
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </details>
+          <ChatRequestBanner contextId={chatParentContext.contextId} />
         )}
         <HeaderWithBackButton
           title={chatParentContext.name}
