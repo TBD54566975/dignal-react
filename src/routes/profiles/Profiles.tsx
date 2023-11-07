@@ -1,6 +1,6 @@
 import { Header } from '@/components/Header';
 import QrCode from '@/components/QrCode';
-import { useProfileContext } from '@/util/profile';
+import { useProfileContext } from '@/util/contexts';
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -14,30 +14,29 @@ export default function Profiles() {
       <main>
         <div className="scroll-area">
           <ul className="scroll-content visually-hide-scrollbar">
-            {profiles &&
-              Object.values(profiles).map(profile => {
-                return (
-                  profile && (
-                    <li key={profile.contextId}>
-                      <Link to={profile.contextId} className="display-link">
-                        <span className="display-link-detail">
-                          <div className="chatRecordIcon">
-                            <img
-                              width={48}
-                              src={profile.icon}
-                              alt={profile.iconAlt}
-                            />
-                          </div>
-                          <span>
-                            <h2>{profile.name}</h2>
-                            <p>{profile.label}</p>
-                          </span>
+            {Object.values(profiles).map(profile => {
+              return (
+                profile && (
+                  <li key={profile.contextId}>
+                    <Link to={profile.contextId} className="display-link">
+                      <span className="display-link-detail">
+                        <div className="chatRecordIcon">
+                          <img
+                            width={48}
+                            src={profile.icon}
+                            alt={profile.iconAlt}
+                          />
+                        </div>
+                        <span>
+                          <h2>{profile.name}</h2>
+                          <p>{profile.label}</p>
                         </span>
-                      </Link>
-                    </li>
-                  )
-                );
-              })}
+                      </span>
+                    </Link>
+                  </li>
+                )
+              );
+            })}
           </ul>
         </div>
         <button

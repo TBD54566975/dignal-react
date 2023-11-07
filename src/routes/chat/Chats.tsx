@@ -7,10 +7,10 @@ import { formatTime } from '@/util/helpers';
 import {
   sendRecordToParticipants,
   transformChatContextToChatListEntry,
-  useChatContext,
 } from '@/util/chat';
 import { createPrivateOrGroupChat } from '@/util/chat';
 import { RoutePaths } from '@/util/routes';
+import { useChatContext } from '@/util/contexts';
 
 export default function Chats() {
   const newChatModalRef = useRef<HTMLDialogElement>(null);
@@ -22,12 +22,13 @@ export default function Chats() {
     if (newChat) {
       const newChatListEntry =
         await transformChatContextToChatListEntry(newChat);
-      setChats(prev => {
-        return {
-          [newChat.contextId]: newChatListEntry,
-          ...prev,
-        };
-      });
+      setChats &&
+        setChats(prev => {
+          return {
+            [newChat.contextId]: newChatListEntry,
+            ...prev,
+          };
+        });
       navigate(RoutePaths.CHAT + '/' + newChat.contextId);
       sendRecordToParticipants(
         newChat,
@@ -42,33 +43,28 @@ export default function Chats() {
       <main>
         <div className="scroll-area">
           <ul className="scroll-content visually-hide-scrollbar">
-            {chats &&
-              Object.values(chats).map(chat => {
-                return (
-                  chat && (
-                    <li key={chat.contextId}>
-                      <Link to={chat.contextId} className="display-link">
-                        <span className="display-link-detail">
-                          <div className="chatRecordIcon">
-                            <img
-                              width={48}
-                              src={chat.icon}
-                              alt={chat.iconAlt}
-                            />
-                          </div>
-                          <span>
-                            <h2>{chat.name}</h2>
-                            <p>{chat.latest}</p>
-                          </span>
+            {Object.values(chats).map(chat => {
+              return (
+                chat && (
+                  <li key={chat.contextId}>
+                    <Link to={chat.contextId} className="display-link">
+                      <span className="display-link-detail">
+                        <div className="chatRecordIcon">
+                          <img width={48} src={chat.icon} alt={chat.iconAlt} />
+                        </div>
+                        <span>
+                          <h2>{chat.name}</h2>
+                          <p>{chat.latest}</p>
                         </span>
-                        <time dateTime={chat.timestamp}>
-                          {formatTime(chat.timestamp)}
-                        </time>
-                      </Link>
-                    </li>
-                  )
-                );
-              })}
+                      </span>
+                      <time dateTime={chat.timestamp}>
+                        {formatTime(chat.timestamp)}
+                      </time>
+                    </Link>
+                  </li>
+                )
+              );
+            })}
           </ul>
         </div>
         <button

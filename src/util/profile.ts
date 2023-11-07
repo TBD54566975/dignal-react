@@ -9,11 +9,9 @@ import {
   writeRecord,
 } from '@/util/web5';
 import { sampleProfile } from './sampleProfiles';
-import { IProfile } from './types';
 import { convertUrlToBlob, convertBlobToUrl } from './helpers';
 import SingleUser from '@assets/users/single-user.svg';
 import GroupUsers from '@assets/users/group-users.svg';
-import { useOutletContext } from 'react-router-dom';
 
 interface RelatedRecord {
   parentId: string;
@@ -30,7 +28,7 @@ export async function setUpWeb5User() {
 
 export async function checkForAndSetProfiles() {
   const { records, status } = await getAllUserProfileContexts();
-  if (records) {
+  if (records && records.length) {
     return { records, status };
   } else {
     return { records: [(await setWeb5UserStarterProfile()).record], status };
@@ -53,7 +51,7 @@ export async function createFullUserProfile({
   name,
   icon,
   iconAlt,
-}: IProfile) {
+}: Omit<ProfileListContextItem, 'contextId'>) {
   const profileResponse = await createUserProfileContext();
   const profileLabelResponse =
     profileResponse.record &&
@@ -319,17 +317,11 @@ export type ProfileListContextItem = {
   iconAlt: string;
   contextId: string;
 };
-export type ProfileContextValue = {
-  [contextId: string]: ProfileListContextItem | undefined;
-};
-export type ProfileContext = [
-  ProfileContextValue | undefined,
-  React.Dispatch<React.SetStateAction<ProfileContextValue | undefined>>,
-];
+
 export async function setProfileList() {
   const profiles = await checkForAndSetProfiles();
+  const profileList = [];
   if (profiles.records.length) {
-    const profileList = [];
     for (const profile of profiles.records) {
       if (profile) {
         profileList.push({
@@ -341,18 +333,8 @@ export async function setProfileList() {
         });
       }
     }
-    if (profileList.length) {
-      return (
-        profileList &&
-        Object.fromEntries(
-          profileList.map(profile => [profile && profile.contextId, profile]),
-        )
-      );
-    }
   }
-}
-
-export function useProfileContext() {
-  const { profiles } = useOutletContext<{ profiles: ProfileContext }>();
-  return profiles;
+  return Object.fromEntries(
+    profileList.map(profile => [profile && profile.contextId, profile]),
+  );
 }

@@ -2,10 +2,10 @@ import {
   approveRequestToEnterChat,
   declineRequestToEnterChat,
   updateChatParentContextAfterHandlingRequest,
-  useChatContext,
 } from '@/util/chat';
 import styles from './ChatRequestBanner.module.css';
 import RightChevron from '@assets/buttons/right-chevron.svg';
+import { useChatContext } from '@/util/contexts';
 
 export default function ChatRequestBanner({
   contextId,

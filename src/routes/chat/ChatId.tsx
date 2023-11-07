@@ -7,7 +7,6 @@ import {
   createNewRequestToEnterChat,
   matchRecordSchema,
   transformDwnRecordToChatRecord,
-  useChatContext,
 } from '@/util/chat';
 import { RoutePaths } from '@/util/routes';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -15,6 +14,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import styles from './ChatId.module.css';
 import ChatInputBar from '@/components/ChatInputBar';
 import ChatRequestBanner from '@/components/ChatRequestBanner';
+import { useChatContext } from '@/util/contexts';
 
 export default function ChatId() {
   const params = useParams();

@@ -2,22 +2,13 @@ import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router';
 import { setInitialTheme } from '../theme';
 import Loading from '@/components/Loading';
-import {
-  ProfileContext,
-  ProfileContextValue,
-  setProfileList,
-  setUpWeb5User,
-} from '@/util/profile';
+import { setProfileList, setUpWeb5User } from '@/util/profile';
 import { useNavigate } from 'react-router-dom';
 import { RoutePaths } from '@/util/routes';
 import Sidebar from '@/components/Sidebar';
-import {
-  ChatContext,
-  ChatContextValue,
-  parseChatInviteUrl,
-  setChatList,
-} from '@/util/chat';
+import { parseChatInviteUrl, setChatList } from '@/util/chat';
 import RequestModal from '@/components/RequestModal';
+import { ChatContextValue, ProfileContextValue } from '@/util/contexts';
 
 setInitialTheme();
 
@@ -27,8 +18,8 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const navigate = useNavigate();
-  const [chats, setChats] = useState<ChatContextValue | undefined>();
-  const [profiles, setProfiles] = useState<ProfileContextValue | undefined>();
+  const [chats, setChats] = useState<ChatContextValue>({});
+  const [profiles, setProfiles] = useState<ProfileContextValue>({});
 
   useEffect(() => {
     let pollForNewChats: NodeJS.Timeout;
@@ -76,8 +67,8 @@ export default function App() {
       <Sidebar />
       <Outlet
         context={{
-          chats: [chats, setChats] satisfies ChatContext,
-          profiles: [profiles, setProfiles] satisfies ProfileContext,
+          chats: [chats, setChats],
+          profiles: [profiles, setProfiles],
         }}
       />
     </div>

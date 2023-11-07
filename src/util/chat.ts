@@ -12,7 +12,6 @@ import {
   getProfileNameIconAndIconAltForDisplay,
   getUserProfileNameWithFallback,
 } from './profile';
-import { useOutletContext } from 'react-router-dom';
 import SingleUser from '@assets/users/single-user.svg';
 
 export async function createPrivateOrGroupChat(type: 'private' | 'group') {
@@ -394,13 +393,6 @@ export type ChatListContextItem = {
   inviteRecordId?: string;
   requestList?: { request: Record; name: string }[];
 };
-export type ChatContextValue = {
-  [contextId: string]: ChatListContextItem | undefined;
-};
-export type ChatContext = [
-  ChatContextValue | undefined,
-  React.Dispatch<React.SetStateAction<ChatContextValue | undefined>>,
-];
 
 export async function setChatList() {
   const chatList = await hydrateChatList();
@@ -408,11 +400,6 @@ export async function setChatList() {
     chatList &&
     Object.fromEntries(chatList.map(chat => [chat && chat.contextId, chat]))
   );
-}
-
-export function useChatContext() {
-  const { chats } = useOutletContext<{ chats: ChatContext }>();
-  return chats;
 }
 
 export function matchRecordSchema(recordSchema: string, targetSchema: string) {

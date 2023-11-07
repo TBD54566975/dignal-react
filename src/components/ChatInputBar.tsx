@@ -1,11 +1,11 @@
 import {
   createNewChatThreadMessage,
   sendRecordToParticipants,
-  useChatContext,
 } from '@/util/chat';
 import { useState, ChangeEvent, FormEvent, useRef, useEffect } from 'react';
 import styles from './ChatInputBar.module.css';
 import Send from '@assets/buttons/send.svg';
+import { useChatContext } from '@/util/contexts';
 
 export default function ChatInputField({
   parentThreadId,
@@ -19,6 +19,8 @@ export default function ChatInputField({
   };
   const [formData, setFormData] = useState(initialState);
   const [chats, setChats] = useChatContext();
+
+  const currentChat = chats[contextId];
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -37,14 +39,14 @@ export default function ChatInputField({
           },
           message: formData.message,
         });
-        if (record && chats) {
-          const currentRecords = chats[contextId].records;
+        if (record && currentChat) {
+          const currentRecords = currentChat.records;
           currentRecords?.push(record);
           setChats(prev => {
             return {
               ...prev,
               [contextId]: {
-                ...chats[contextId],
+                ...currentChat,
                 records: currentRecords,
                 latest: formData.message ?? 'Empty message',
               },
@@ -52,7 +54,7 @@ export default function ChatInputField({
           });
           currentTarget.reset();
           setFormData(initialState);
-          await sendRecordToParticipants(record, chats[contextId].participants);
+          await sendRecordToParticipants(record, currentChat.participants);
         } else {
           console.error('Something went wrong. please try again');
           alert('Something went wrong. please try again');
