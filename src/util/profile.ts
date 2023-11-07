@@ -190,6 +190,7 @@ export async function getUserProfileLabel(from?: string) {
   return await readRecord({
     ...(from && { from }),
     filter: {
+      protocol: ProfilesProtocol.protocol,
       protocolPath: 'profile/label',
     },
   });
@@ -199,6 +200,7 @@ export async function getUserProfileName(from?: string) {
   return await readRecord({
     ...(from && { from }),
     filter: {
+      protocol: ProfilesProtocol.protocol,
       protocolPath: 'profile/name',
     },
   });
@@ -208,6 +210,7 @@ export async function getUserProfileIcon(from?: string) {
   return await readRecord({
     ...(from && { from }),
     filter: {
+      protocol: ProfilesProtocol.protocol,
       protocolPath: 'profile/icon',
     },
   });
@@ -217,6 +220,7 @@ export async function getUserProfileIconAlt(from?: string) {
   return await readRecord({
     ...(from && { from }),
     filter: {
+      protocol: ProfilesProtocol.protocol,
       protocolPath: 'profile/icon/iconAlt',
     },
   });

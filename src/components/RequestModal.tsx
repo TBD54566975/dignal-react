@@ -1,4 +1,7 @@
-import { createChatRequestToSend } from '@/util/chat';
+import {
+  createNewRequestToEnterChat,
+  getNewRequestToEnterChatError,
+} from '@/util/chat';
 import { useRef, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -6,17 +9,17 @@ export default function RequestModal({
   requestParams,
 }: {
   isLoading: boolean;
-  requestParams: { recordId: string; did: string };
+  requestParams: { inviteId: string; did: string };
 }) {
   const requestModalRef = useRef<HTMLDialogElement>(null);
   const [isRequestSent, setIsRequestSent] = useState(false);
   const [isRequestPending, setIsRequestPending] = useState(false);
 
   useEffect(() => {
-    if (requestParams.recordId && requestParams.did) {
+    if (requestParams.inviteId && requestParams.did) {
       requestModalRef.current?.showModal();
     }
-  }, [requestParams.recordId, requestParams.did]);
+  }, [requestParams.inviteId, requestParams.did]);
 
   const setSearch = useSearchParams()[1];
 
@@ -45,7 +48,6 @@ export default function RequestModal({
               const requestContextRecord = await requestAccess({
                 ...requestParams,
               });
-              console.log(requestContextRecord);
               if (requestContextRecord) {
                 setIsRequestSent(true);
               }
@@ -72,16 +74,23 @@ export default function RequestModal({
 }
 
 async function requestAccess({
-  recordId,
+  inviteId,
   did,
 }: {
-  recordId: string;
+  inviteId: string;
   did: string;
 }) {
-  const { record, status } = await createChatRequestToSend(recordId);
+  const error = await getNewRequestToEnterChatError({
+    inviteId,
+    from: did,
+  });
+  if (error) {
+    console.error(error.message);
+    return alert(error.message);
+  }
+  const { record, status } = await createNewRequestToEnterChat(inviteId);
   if (record) {
     await record.send(did);
   }
-  console.log(record);
   return { record, status };
 }

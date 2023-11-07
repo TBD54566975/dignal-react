@@ -38,6 +38,8 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    padding-block: 1rem;
+    gap: 1rem;
 
     &.header-treatment {
       background: var(--color-primary);
@@ -48,13 +50,13 @@
     }
 
     & header {
-      padding: 2rem 1rem;
+      margin-inline: 1rem;
     }
 
     & main {
       background: var(--color-brand-white);
       border-radius: 2rem 2rem 0 0;
-      padding: 2rem 1rem;
+      margin-inline: 1rem;
       flex: 1;
       display: flex;
       flex-direction: column;

@@ -32,7 +32,9 @@ export async function createPrivateOrGroupChat(type: 'private' | 'group') {
       if (thread) {
         await createNewChatThreadLog({
           parent: thread,
-          log: (await getUserProfileNameWithFallback()) + ' joined this chat',
+          log:
+            (await getUserProfileNameWithFallback()) +
+            ' joined this chat (this is you)',
         });
       }
       return record;
@@ -96,18 +98,6 @@ export async function createNewChatInviteContextId({
   });
 }
 
-export async function createChatRequestToSend(inviteRecordId: string) {
-  return await writeRecord({
-    data: inviteRecordId,
-    message: {
-      protocol: ChatsProtocol.protocol,
-      protocolPath: 'request',
-      schema: 'request',
-      recipient: userDid,
-    },
-  });
-}
-
 export async function createNewChatThread({
   parent,
 }: {
@@ -165,10 +155,23 @@ export async function createNewChatThreadMessage({
   });
 }
 
+export async function createNewRequestToEnterChat(inviteRecordId: string) {
+  return await writeRecord({
+    data: inviteRecordId,
+    message: {
+      protocol: ChatsProtocol.protocol,
+      protocolPath: 'request',
+      schema: 'request',
+      recipient: userDid,
+    },
+  });
+}
+
 export async function getAllChatContexts() {
   return await queryRecords({
     message: {
       filter: {
+        protocol: ChatsProtocol.protocol,
         protocolPath: 'chat',
       },
       dateSort: 'createdDescending' as QueryDateSort,
@@ -179,6 +182,7 @@ export async function getAllChatContexts() {
 export async function getChatContext(contextId: string) {
   return await readRecord({
     filter: {
+      protocol: ChatsProtocol.protocol,
       protocolPath: 'chat',
       contextId,
     },
@@ -188,6 +192,7 @@ export async function getChatContext(contextId: string) {
 export async function getChatMetadata(contextId: string) {
   return await readRecord({
     filter: {
+      protocol: ChatsProtocol.protocol,
       protocolPath: 'chat/metadata',
       contextId,
     },
@@ -204,6 +209,7 @@ export async function getChatInviteByRecordId({
   return await readRecord({
     ...(from && { from }),
     filter: {
+      protocol: ChatsProtocol.protocol,
       protocolPath: 'chat/invite',
       recordId,
     },
@@ -220,27 +226,63 @@ export async function getChatInviteByContextId({
   return await readRecord({
     ...(from && { from }),
     filter: {
+      protocol: ChatsProtocol.protocol,
       protocolPath: 'chat/invite',
       contextId,
     },
   });
 }
 
-export async function getAllChatRequests() {
+export async function getAllRequestsToEnterChats(recipient?: string) {
   return await queryRecords({
     message: {
       filter: {
         protocol: ChatsProtocol.protocol,
         protocolPath: 'request',
         schema: 'request',
+        ...(recipient && { recipient }),
       },
     },
   });
 }
 
+export async function getRequestToEnterChat() {
+  return await queryRecords({
+    message: {
+      filter: {
+        protocol: ChatsProtocol.protocol,
+        protocolPath: 'request',
+      },
+      dateSort: 'createdAscending' as QueryDateSort,
+    },
+  });
+}
+
+export async function mapRequestToChatListContextItemId(records: Record[]) {
+  const requestMap = new Map();
+  for (const requestRecord of records) {
+    const inviteId = await requestRecord.data.text();
+    const participantDetailsToAdd = {
+      name: await getUserProfileNameWithFallback(requestRecord.recipient),
+      request: requestRecord,
+    };
+    const { record: inviteRecord } = await getChatInviteByRecordId(inviteId);
+    if (inviteRecord) {
+      const chatId = inviteRecord.contextId;
+      if (requestMap.has(chatId)) {
+        requestMap.get(chatId).push(participantDetailsToAdd);
+      } else {
+        requestMap.set(chatId, [participantDetailsToAdd]);
+      }
+    }
+  }
+  return requestMap;
+}
+
 export async function getChatContextThread(contextId: string) {
   return await readRecord({
     filter: {
+      protocol: ChatsProtocol.protocol,
       protocolPath: 'chat/thread',
       contextId,
     },
@@ -260,6 +302,7 @@ export async function getChatContextThreadRecords(parentId: string) {
 
 export async function transformChatContextToChatListEntry(
   record: Pick<Record, 'id' | 'contextId' | 'data' | 'dateModified'>,
+  requestList?: { request: Record; name: string }[],
 ) {
   const metadata = await getChatMetadata(record.contextId);
   const data = await metadata.record.data.json();
@@ -304,16 +347,26 @@ export async function transformChatContextToChatListEntry(
     thread: thread.record,
     records,
     profiles,
-    ...(invite && { inviteRecordId: invite.record.id }),
+    ...(invite.record && { inviteRecordId: invite.record.id }),
+    ...(requestList && { requestList }),
   };
 }
 
 export async function hydrateChatList() {
   const { records } = await getAllChatContexts();
   if (records) {
+    const { records: requests } = await getAllRequestsToEnterChats();
+    const mappedRequests =
+      requests && (await mapRequestToChatListContextItemId(requests));
     const data = Promise.all(
       records.map(async record => {
-        return await transformChatContextToChatListEntry(record);
+        if (mappedRequests?.get(record.contextId)?.recipient === userDid) {
+          await mappedRequests?.get(record.contextId).delete();
+        }
+        return await transformChatContextToChatListEntry(
+          record,
+          mappedRequests?.get(record.contextId),
+        );
       }),
     );
     return await data;
@@ -329,13 +382,14 @@ export type ChatListContextItem = {
   name: string;
   latest: string;
   timestamp: string;
-  records: Record[] | undefined;
   thread: Record;
+  records?: Record[];
   profiles: Map<
     string,
     Promise<{ label: string; name: string; icon: string; iconAlt: string }>
   >;
   inviteRecordId?: string;
+  requestList?: { request: Record; name: string }[];
 };
 export type ChatContextValue = { [contextId: string]: ChatListContextItem };
 export type ChatContext = [
@@ -368,14 +422,14 @@ export function matchUserDidToTargetDid(targetDid: string) {
 }
 
 export function constructChatInviteUrl(recordId: string) {
-  return '?r=' + recordId + '&d=' + userDid;
+  return '?i=' + recordId + '&d=' + userDid;
 }
 
 export function parseChatInviteUrl(inviteUrlSearchQuery: string) {
   const params = new URLSearchParams(inviteUrlSearchQuery);
-  const recordId = params.get('r');
+  const inviteId = params.get('i');
   const did = params.get('d');
-  return recordId && did && { recordId, did };
+  return inviteId && did && { inviteId, did };
 }
 
 export type ChatRecordDisplayProps = {
@@ -421,28 +475,88 @@ export async function sendRecordToParticipants(
   }
 }
 
-export async function getSendRequestError({
-  recordId,
-  did,
+export async function getNewRequestToEnterChatError({
+  inviteId,
+  from,
 }: {
-  recordId: string;
-  did: string;
+  inviteId: string;
+  from: string;
 }) {
-  if (matchUserDidToTargetDid(did)) {
-    return "You can't request access from yourself.";
+  if (matchUserDidToTargetDid(from)) {
+    return new Error("You can't request access from yourself.");
   }
-  const { record: inviteRecord, status } = await getChatInviteByRecordId({
-    recordId,
-    from: did,
+  const { records: requests } = await getAllRequestsToEnterChats(userDid);
+  if (requests) {
+    for (const request of requests) {
+      if ((await request.data.text()) === inviteId) {
+        return new Error('You have already sent a request');
+      }
+    }
+  }
+  const { record: inviteRecord } = await getChatInviteByRecordId({
+    recordId: inviteId,
+    from,
   });
-  console.log(inviteRecord, status);
   if (inviteRecord) {
     const { record: chatContextRecord } = await getChatContext(
       inviteRecord.contextId,
     );
     if (chatContextRecord) {
-      return 'You already have this chat.';
+      return new Error('You already have this chat.');
     }
+    return;
   }
-  return 'This invite no longer exists.';
+  return new Error('This invite no longer exists.');
+}
+
+export async function approveRequestToEnterChat({
+  request,
+  inviteId,
+}: {
+  request: Record;
+  inviteId?: string;
+}) {
+  // get the chat context record, then send to the new participant
+  const { record: invite } = await getChatInviteByRecordId({
+    recordId: inviteId,
+  });
+  const { record: chatContext } = await getChatContext(invite.contextId);
+  await chatContext.send(request.recipient);
+  // update the participant list in the metadata , then send that to the new participant
+  const { record: metadata } = await getChatMetadata(invite.contextId);
+  const metadataBody = await metadata.data.json();
+  await metadata.update({
+    data: {
+      participants: [...metadataBody.participants, request.recipient],
+      ...metadataBody,
+    },
+  });
+  await metadata.send(request.recipient);
+  // get the chat thread, then send that to the new participant
+  const { record: thread } = await getChatContextThread(invite.contextId);
+  await thread.send(request.recipient);
+  // get all chat thread records, then send those to the new participant
+  const { records: messages } = await getChatContextThreadRecords(thread.id);
+
+  messages &&
+    Promise.all(
+      messages.map((message: Record) => {
+        return message.send(request.recipient);
+      }),
+    );
+  if (metadataBody.type === 'private') {
+    Promise.all([
+      await invite.delete(),
+      await createNewChatThreadLog({
+        parent: thread,
+        log: 'No one else can join this 1:1 chat',
+      }),
+    ]);
+  }
+
+  return await request.delete();
+}
+
+export async function declineRequestToEnterChat(request: Record) {
+  return await request.delete();
 }

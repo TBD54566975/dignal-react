@@ -32,12 +32,13 @@ export default function ChatRecord({
       {/* {chatRecordElement} */}
       {typeof recordData === 'string' ? (
         <span id={recordId}>
-          {recordData}{' '}
+          {recordData}
+          {/* {' '}
           <strong>
             {matchRecordSchema(recordSchema, 'log') &&
               isSentFromUser &&
               '(this is you)'}
-          </strong>
+          </strong> */}
         </span>
       ) : (
         <img

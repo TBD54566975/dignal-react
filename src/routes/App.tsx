@@ -25,12 +25,16 @@ export default function App() {
   const [chats, setChats] = useState<ChatContextValue | undefined>();
 
   useEffect(() => {
+    let pollForNewChats: NodeJS.Timeout;
     async function setupWeb5AndChatList() {
       try {
         await setUpWeb5User();
         await checkForAndSetProfile();
 
         setChats(await setChatList());
+        pollForNewChats = setInterval(async () => {
+          setChats(await setChatList());
+        }, 5000);
         setIsLoading(false);
 
         if (location.pathname === RoutePaths.ROOT) {
@@ -46,6 +50,7 @@ export default function App() {
       }
     }
     void setupWeb5AndChatList();
+    return () => clearInterval(pollForNewChats);
   }, [navigate]);
 
   if (isError) {

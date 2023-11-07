@@ -6,7 +6,7 @@ export const ChatsProtocol = {
     "chat": {},
     "metadata": {
       "schema": "metadata",
-      "dataFormats": ["application/json"]// { participants: string[]; type: "private" | "group";  }
+      "dataFormats": ["application/json"]
     },
     "thread": {},
     "message": {
@@ -460,8 +460,7 @@ export const ChatsProtocol = {
             "can": "write"
           },
           {
-            "who": "author",
-            "of": "chat",
+            "who": "anyone",
             "can": "read",
           },
         ]

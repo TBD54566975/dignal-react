@@ -1,12 +1,11 @@
 import { Header } from '@/components/Header';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import RightChevron from '@assets/buttons/right-chevron.svg';
 import Modal from '@/components/Modal';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatTime } from '@/util/helpers';
 import {
   sendRecordToParticipants,
-  setChatList,
   transformChatContextToChatListEntry,
   useChatContext,
 } from '@/util/chat';
@@ -17,14 +16,6 @@ export default function Chats() {
   const newChatModalRef = useRef<HTMLDialogElement>(null);
   const navigate = useNavigate();
   const [chats, setChats] = useChatContext();
-
-  useEffect(() => {
-    const pollForNewChats = setInterval(async () => {
-      setChats(await setChatList());
-    }, 5000);
-
-    return () => clearInterval(pollForNewChats);
-  }, []);
 
   async function handleCreateNewChat(type: 'private' | 'group') {
     const newChat = await createPrivateOrGroupChat(type);
