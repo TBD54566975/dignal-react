@@ -1,7 +1,7 @@
 import { Header } from '@/components/Header';
 import { useRef } from 'react';
 import RightChevron from '@assets/buttons/right-chevron.svg';
-import Modal from '@/components/Modal';
+import ListModal from '@/components/ListModal';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatTime } from '@/util/helpers';
 import {
@@ -81,8 +81,8 @@ export default function Chats() {
           Start a new chat
         </button>
 
-        <Modal
-          objectRef={newChatModalRef}
+        <ListModal
+          listModalRef={newChatModalRef}
           title="Start a new..."
           dismissLabel="Cancel"
           listItems={[

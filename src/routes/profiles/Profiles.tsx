@@ -1,5 +1,5 @@
 import { Header } from '@/components/Header';
-import QrCode from '@/components/QrCode';
+import ImportModal from '@/components/ImportModal';
 import { useProfileContext } from '@/util/contexts';
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
@@ -40,36 +40,14 @@ export default function Profiles() {
           </ul>
         </div>
         <button
-          className="btn expanded"
+          className="btn expanded secondary"
           onClick={() => {
             importModalRef.current?.showModal();
           }}
         >
           Import profile
         </button>
-
-        <dialog
-          ref={importModalRef}
-          onClick={e => {
-            if (e.target === importModalRef.current) {
-              importModalRef.current.close();
-            }
-          }}
-        >
-          <h2>Scan the QR code or go to your ID Agent</h2>
-          <QrCode dataToEmbed="#" />
-          <div className="btn-row btn-row-expanded">
-            <button className="btn" onClick={async () => {}}>
-              Open ID Agent
-            </button>
-            <button
-              className="btn secondary expanded"
-              onClick={() => importModalRef.current?.close()}
-            >
-              Cancel
-            </button>
-          </div>
-        </dialog>
+        <ImportModal importModalRef={importModalRef} />
       </main>
     </div>
   );

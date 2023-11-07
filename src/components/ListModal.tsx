@@ -1,22 +1,22 @@
 import { ReactNode, RefObject } from 'react';
 
-export default function Modal({
+export default function ListModal({
   title,
   dismissLabel,
   listItems,
-  objectRef,
+  listModalRef,
 }: {
   title: string;
   dismissLabel?: string;
   listItems: ReactNode[];
-  objectRef: RefObject<HTMLDialogElement>;
+  listModalRef: RefObject<HTMLDialogElement>;
 }) {
   return (
     <dialog
-      ref={objectRef}
+      ref={listModalRef}
       onClick={e => {
-        if (e.target === objectRef.current) {
-          objectRef.current.close();
+        if (e.target === listModalRef.current) {
+          listModalRef.current.close();
         }
       }}
     >
@@ -29,7 +29,7 @@ export default function Modal({
       {dismissLabel && (
         <button
           className="btn secondary expanded"
-          onClick={() => objectRef.current?.close()}
+          onClick={() => listModalRef.current?.close()}
         >
           {dismissLabel}
         </button>

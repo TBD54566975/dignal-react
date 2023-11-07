@@ -86,7 +86,6 @@ export default function ChatInputField({
           value={formData.message}
           onChange={handleChange}
           autoComplete="off"
-          autoFocus
         />
       </div>
       <button className="btn" aria-label="Send">
