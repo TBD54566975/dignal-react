@@ -26,7 +26,7 @@ export default function ChatRequestBanner({
             <li key={requestingParticipant.request.id}>
               <div className={styles.requestItem}>
                 {requestingParticipant.name} would like to join this chat.
-                <div className={styles.requestButtons}>
+                <div className="btn-row">
                   <button
                     className="btn"
                     onClick={async () => {

@@ -5,6 +5,7 @@ import Modal from '@/components/Modal';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatTime } from '@/util/helpers';
 import {
+  lastMessageIsALog,
   sendRecordToParticipants,
   transformChatContextToChatListEntry,
 } from '@/util/chat';
@@ -54,7 +55,13 @@ export default function Chats() {
                         </div>
                         <span>
                           <h2>{chat.name}</h2>
-                          <p>{chat.latest}</p>
+                          <p
+                            className={
+                              lastMessageIsALog(chat) ? 'text-italic' : ''
+                            }
+                          >
+                            {chat.latest}
+                          </p>
                         </span>
                       </span>
                       <time dateTime={chat.timestamp}>

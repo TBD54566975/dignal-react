@@ -257,15 +257,19 @@ export async function getRequestToEnterChat() {
   });
 }
 
-export async function mapRequestToChatListContextItemId(records: Record[]) {
+export async function mapRequestToChatListContextItemId(
+  requestRecords: Record[],
+) {
   const requestMap = new Map();
-  for (const requestRecord of records) {
+  for (const requestRecord of requestRecords) {
     const inviteId = await requestRecord.data.text();
     const participantDetailsToAdd = {
       name: await getUserProfileNameWithFallback(requestRecord.recipient),
       request: requestRecord,
     };
-    const { record: inviteRecord } = await getChatInviteByRecordId(inviteId);
+    const { record: inviteRecord } = await getChatInviteByRecordId({
+      recordId: inviteId,
+    });
     if (inviteRecord) {
       const chatId = inviteRecord.contextId;
       if (requestMap.has(chatId)) {
@@ -357,7 +361,8 @@ export async function transformChatContextToChatListEntry(
 export async function hydrateChatList() {
   const { records } = await getAllChatContexts();
   if (records) {
-    const { records: requests } = await getAllRequestsToEnterChats();
+    const result = await getAllRequestsToEnterChats();
+    const { records: requests } = result;
     const mappedRequests =
       requests && (await mapRequestToChatListContextItemId(requests));
     const data = Promise.all(
@@ -412,6 +417,13 @@ export function matchRecordSchema(recordSchema: string, targetSchema: string) {
 // until other means of determining original authorship in the record wrapper
 export function matchUserDidToTargetDid(targetDid: string) {
   return targetDid === userDid;
+}
+
+export function lastMessageIsALog(chat: ChatListContextItem) {
+  return (
+    chat.records &&
+    chat.records[chat.records.length - 1].schema === 'http://log'
+  );
 }
 
 export function constructChatInviteUrl(recordId: string) {

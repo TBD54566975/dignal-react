@@ -58,15 +58,17 @@ export default function Profiles() {
         >
           <h2>Scan the QR code or go to your ID Agent</h2>
           <QrCode dataToEmbed="#" />
-          <button className="btn" onClick={async () => {}}>
-            Open ID Agent
-          </button>
-          <button
-            className="btn secondary expanded"
-            onClick={() => importModalRef.current?.close()}
-          >
-            Cancel
-          </button>
+          <div className="btn-row btn-row-expanded">
+            <button className="btn" onClick={async () => {}}>
+              Open ID Agent
+            </button>
+            <button
+              className="btn secondary expanded"
+              onClick={() => importModalRef.current?.close()}
+            >
+              Cancel
+            </button>
+          </div>
         </dialog>
       </main>
     </div>

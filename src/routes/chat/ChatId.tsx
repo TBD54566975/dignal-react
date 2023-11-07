@@ -100,7 +100,6 @@ export default function ChatId() {
                       RoutePaths.ROOT +
                       constructChatInviteUrl(chatParentContext.inviteRecordId)
                     }
-                    includeCopyButton
                   />
                 </div>
               )}

@@ -98,12 +98,6 @@ select {
   width: 100%;
 }
 
-.button-row {
-  display: flex;
-  margin: 1rem;
-  gap: 1rem;
-}
-
 .row {
   display: flex;
   flex-direction: column;
@@ -428,6 +422,17 @@ dialog[open] {
   & img {
     object-fit: contain;
     height: 100%;
+  }
+}
+
+.btn-row {
+  display: flex;
+  gap: 1rem;
+
+  &.btn-row-expanded {
+    & button {
+      flex: 1;
+    }
   }
 }
 

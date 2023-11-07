@@ -17,3 +17,7 @@
 .text-lg {
   font-size: var(--type-lg);
 }
+
+.text-italic {
+  font-style: italic;
+}
