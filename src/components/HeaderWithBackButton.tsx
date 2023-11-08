@@ -5,11 +5,13 @@ import styles from './HeaderWithBackButton.module.css';
 
 export function HeaderWithBackButton({
   title,
+  description,
   icon,
   iconAlt,
   buttons,
 }: {
   title: string;
+  description?: string;
   icon?: string;
   iconAlt?: string;
   buttons?: ReactNode[];
@@ -22,8 +24,15 @@ export function HeaderWithBackButton({
       </button>
       <div className={styles.headerDisplay}>
         <div className={styles.heading}>
-          {icon && <img src={icon} alt={iconAlt} />}
-          <h1>{title}</h1>
+          {icon && (
+            <div className="chatRecordIcon">
+              <img width={48} src={icon} alt={iconAlt} />
+            </div>
+          )}
+          <div>
+            <h1>{title}</h1>
+            {description && <p>{description}</p>}
+          </div>
         </div>
         <div className={styles.buttons}>
           {buttons &&

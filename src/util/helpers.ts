@@ -55,6 +55,11 @@ export function formatTime(time: string) {
   }
 }
 
+export function formatDate(date: string) {
+  const dateString = new Date(date).toDateString();
+  return dateString.slice(dateString.indexOf(' '));
+}
+
 export async function convertUrlToBlob(url: string) {
   return await (await fetch(url)).blob();
 }

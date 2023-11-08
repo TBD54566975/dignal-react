@@ -427,7 +427,10 @@ export function lastMessageIsALog(chat: ChatListContextItem) {
 }
 
 export function constructChatInviteUrl(recordId: string) {
-  return '?i=' + recordId + '&d=' + userDid;
+  const params = new URLSearchParams();
+  params.set('i', recordId);
+  params.set('d', userDid);
+  return '?' + params;
 }
 
 export function parseChatInviteUrl(inviteUrlSearchQuery: string) {

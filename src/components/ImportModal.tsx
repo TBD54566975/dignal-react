@@ -28,6 +28,12 @@ export default function ImportModal({
 
   function handleOpenIdAgent() {
     setQrVisible(false);
+    // const params = new URLSearchParams();
+    // params.set('nonce', '123'); //random nonce
+    // params.set('temporaryDid', '123'); //temp key did
+    // params.set('url', '123'); //connect relay
+    // console.log(`web5://app.idgagent.web5?${params}`);
+    /* https://hackmd.io/vmSnWtfETHSYrW2BDvIx6A?view */
   }
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {

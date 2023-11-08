@@ -51,7 +51,7 @@ export async function createFullUserProfile({
   name,
   icon,
   iconAlt,
-}: Omit<ProfileListContextItem, 'contextId'>) {
+}: Omit<ProfileListContextItem, 'contextId' | 'did' | 'dateCreated'>) {
   const profileResponse = await createUserProfileContext();
   const profileLabelResponse =
     profileResponse.record &&
@@ -316,6 +316,8 @@ export type ProfileListContextItem = {
   icon: string;
   iconAlt: string;
   contextId: string;
+  did: string;
+  dateCreated: string;
 };
 
 export async function setProfileList() {
@@ -330,6 +332,8 @@ export async function setProfileList() {
             undefined,
             profile.contextId,
           )),
+          did: profile.author,
+          dateCreated: profile.dateCreated,
         });
       }
     }

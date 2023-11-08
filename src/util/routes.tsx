@@ -4,6 +4,7 @@ import App from '@routes/App.tsx';
 import Profiles from '@/routes/profiles/Profiles.tsx';
 import Chats from '@/routes/chat/Chats.tsx';
 import ChatId from '@/routes/chat/ChatId.tsx';
+import ProfileId from '@/routes/profiles/ProfileId.tsx';
 
 export const enum RoutePaths {
   ROOT = '/',
@@ -42,7 +43,7 @@ export const routes: RouteObject[] = [
           },
           {
             path: `${RoutePaths.PROFILES}/:contextId`,
-            element: <div>Profile detail page</div>,
+            element: <ProfileId />,
           },
           {
             path: `${RoutePaths.IMPORT}`,

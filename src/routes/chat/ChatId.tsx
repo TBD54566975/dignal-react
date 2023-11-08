@@ -23,8 +23,7 @@ export default function ChatId() {
   const [messageList, setMessageList] = useState<ChatRecordDisplayProps>([]);
   const [messageCount, setMessageCount] = useState(0);
 
-  const chatParentContext =
-    params.contextId && chats && chats[params.contextId];
+  const chatParentContext = params.contextId && chats[params.contextId];
 
   const messageLengthAtPar = useMemo(
     () =>
