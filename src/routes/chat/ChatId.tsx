@@ -124,7 +124,7 @@ export default function ChatId() {
                         messageListItem.recordSchema,
                         'log',
                       ) && (
-                        <div className={styles.chatRecordIcon}>
+                        <div className="profile-icon-container">
                           <img
                             width={48}
                             src={messageListItem.messageIcon}

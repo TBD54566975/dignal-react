@@ -111,7 +111,6 @@ export async function addProfileLabel(
       schema: 'label',
       contextId,
       parentId,
-      published: true,
     },
   });
 }

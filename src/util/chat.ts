@@ -31,9 +31,7 @@ export async function createPrivateOrGroupChat(type: 'private' | 'group') {
       if (thread) {
         await createNewChatThreadLog({
           parent: thread,
-          log:
-            (await getUserProfileNameWithFallback()) +
-            ' joined this chat (this is you)',
+          log: (await getUserProfileNameWithFallback()) + ' joined this chat',
         });
       }
       return record;

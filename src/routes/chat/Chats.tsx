@@ -50,7 +50,7 @@ export default function Chats() {
                   <li key={chat.contextId}>
                     <Link to={chat.contextId} className="display-link">
                       <span className="display-link-detail">
-                        <div className="chatRecordIcon">
+                        <div className="profile-icon-container">
                           <img width={48} src={chat.icon} alt={chat.iconAlt} />
                         </div>
                         <span>

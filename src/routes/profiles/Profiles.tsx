@@ -20,7 +20,7 @@ export default function Profiles() {
                   <li key={profile.contextId}>
                     <Link to={profile.contextId} className="display-link">
                       <span className="display-link-detail">
-                        <div className="chatRecordIcon">
+                        <div className="profile-icon-container">
                           <img
                             width={48}
                             src={profile.icon}

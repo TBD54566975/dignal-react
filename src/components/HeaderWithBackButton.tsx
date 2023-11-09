@@ -25,7 +25,7 @@ export function HeaderWithBackButton({
       <div className={styles.headerDisplay}>
         <div className={styles.heading}>
           {icon && (
-            <div className="chatRecordIcon">
+            <div className="profile-icon-container">
               <img width={48} src={icon} alt={iconAlt} />
             </div>
           )}

@@ -1,11 +1,14 @@
-import { IPublicProfile } from '@/util/types';
 import Bat from '@assets/sample-pictures/bat.png';
 import Cow from '@assets/sample-pictures/cow.png';
 import Dolphin from '@assets/sample-pictures/dolphin.png';
 import Elephant from '@assets/sample-pictures/elephant.png';
 import Fox from '@assets/sample-pictures/fox.png';
+import { ProfileListContextItem } from './profile';
 
-const sampleDisplayProfiles: IPublicProfile[] = [
+const sampleDisplayProfiles: Pick<
+  ProfileListContextItem,
+  'name' | 'icon' | 'iconAlt'
+>[] = [
   {
     name: 'Bella Bat',
     icon: Bat,
